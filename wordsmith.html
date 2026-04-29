@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wordsmith</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --sidebar-bg: #1a1917;
+    --sidebar-text: #c8c4bc;
+    --sidebar-muted: #6b6761;
+    --sidebar-hover: #252320;
+    --sidebar-active: #2e2c29;
+    --accent: #c9a96e;
+    --accent-dim: #8a6f44;
+    --text: #1a1917;
+    --text-muted: #7a7772;
+    --text-faint: #b5b2ac;
+    --border: #e5e2dc;
+    --border-dark: #d0ccc5;
+    --toolbar-bg: #ffffff;
+    --toolbar-border: #eeebe6;
+    --btn-hover: #f0ede8;
+    --btn-active: #e8e4de;
+    --modal-bg: rgba(26,25,23,0.55);
+    --radius: 6px;
+    --font-ui: 'DM Sans', sans-serif;
+    --font-serif: 'Playfair Display', serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Titlebar ── */
+  #titlebar {
+    height: 44px;
+    background: var(--sidebar-bg);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #111;
+    z-index: 100;
+  }
+  #titlebar .logo {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    font-style: italic;
+  }
+  #titlebar .project-title {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    color: var(--sidebar-muted);
+    letter-spacing: 0.02em;
+    font-weight: 300;
+  }
+  #titlebar .tb-actions {
+    display: flex;
+    gap: 6px;
+  }
+  #titlebar button {
+    background: none;
+    border: 1px solid #3a3835;
+    color: var(--sidebar-text);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  #titlebar button:hover { background: #2a2825; border-color: #555; }
+  #titlebar button.primary {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  #titlebar button.primary:hover { background: var(--accent); }
+
+  /* ── Layout ── */
+  #app {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #111;
+    overflow: hidden;
+  }
+  .sidebar-section {
+    padding: 16px 12px 8px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sidebar-muted);
+  }
+  .chapter-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 8px 8px;
+  }
+  .chapter-list::-webkit-scrollbar { width: 4px; }
+  .chapter-list::-webkit-scrollbar-thumb { background: #3a3835; border-radius: 2px; }
+  .chapter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: var(--sidebar-text);
+    font-size: 13px;
+    font-weight: 300;
+    transition: background 0.12s;
+    user-select: none;
+    position: relative;
+  }
+  .chapter-item:hover { background: var(--sidebar-hover); }
+  .chapter-item.active { background: var(--sidebar-active); color: var(--accent); }
+  .chapter-item .ch-icon {
+    width: 14px;
+    height: 14px;
+    opacity: 0.4;
+    flex-shrink: 0;
+  }
+  .chapter-item.active .ch-icon { opacity: 0.8; }
+  .chapter-item .ch-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chapter-item .ch-del {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.12s;
+  }
+  .chapter-item:hover .ch-del { opacity: 1; }
+  .chapter-item .ch-del:hover { color: #e07070; }
+  .ch-word-count {
+    font-size: 10px;
+    color: var(--sidebar-muted);
+    font-family: var(--font-mono);
+  }
+  .add-chapter-btn {
+    margin: 8px;
+    padding: 8px;
+    background: none;
+    border: 1px dashed #333;
+    color: var(--sidebar-muted);
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    text-align: center;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .add-chapter-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+
+  .sidebar-stats {
+    padding: 12px;
+    border-top: 1px solid #252320;
+    font-size: 11px;
+    color: var(--sidebar-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .sidebar-stats span { font-family: var(--font-mono); color: var(--sidebar-text); }
+
+  /* ── Editor Area ── */
+  #editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* ── Toolbar ── */
+  #toolbar {
+    background: var(--toolbar-bg);
+    border-bottom: 1px solid var(--toolbar-border);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .tb-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .tb-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 6px;
+  }
+  .tb-btn {
+    background: none;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    transition: background 0.12s, color 0.12s;
+    font-family: var(--font-ui);
+    font-weight: 500;
+  }
+  .tb-btn:hover { background: var(--btn-hover); color: var(--text); }
+  .tb-btn.active { background: var(--btn-active); color: var(--text); }
+  .tb-btn svg { width: 15px; height: 15px; }
+
+  .tb-select {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    padding: 4px 8px;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.12s;
+  }
+  .tb-select:hover { border-color: var(--border-dark); }
+  .tb-select:focus { border-color: var(--accent); }
+
+  #font-size-input {
+    width: 48px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    padding: 4px 6px;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align: center;
+    outline: none;
+  }
+  #font-size-input:focus { border-color: var(--accent); }
+
+  .color-picker-wrap {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: border-color 0.12s;
+  }
+  .color-picker-wrap:hover { border-color: var(--border-dark); }
+  .color-picker-wrap input[type=color] {
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+  }
+  .color-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: #1a1917;
+    pointer-events: none;
+  }
+
+  /* ── Editor Scroll ── */
+  #editor-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px 0 80px;
+    background: var(--bg);
+  }
+  #editor-scroll::-webkit-scrollbar { width: 6px; }
+  #editor-scroll::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+
+  /* ── Chapter Header ── */
+  #chapter-header {
+    max-width: 720px;
+    margin: 0 auto 24px;
+    padding: 0 40px;
+  }
+  #chapter-title-input {
+    width: 100%;
+    border: none;
+    background: none;
+    font-family: var(--font-serif);
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--text);
+    outline: none;
+    padding: 0;
+    line-height: 1.3;
+  }
+  #chapter-title-input::placeholder { color: var(--text-faint); }
+  .chapter-divider {
+    height: 1px;
+    background: var(--border);
+    margin-top: 16px;
+  }
+
+  /* ── Editor ── */
+  #editor {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 40px;
+    min-height: 600px;
+    outline: none;
+    font-size: 17px;
+    line-height: 1.85;
+    color: var(--text);
+    caret-color: var(--accent);
+    font-family: 'Georgia', serif;
+  }
+  #editor:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-faint);
+    pointer-events: none;
+    font-style: italic;
+  }
+  #editor p { margin-bottom: 1.1em; }
+  #editor h1 { font-family: var(--font-serif); font-size: 26px; font-weight: 500; margin-bottom: 0.6em; line-height: 1.3; }
+  #editor h2 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; margin-bottom: 0.6em; line-height: 1.35; }
+  #editor h3 { font-family: var(--font-serif); font-size: 18px; font-style: italic; margin-bottom: 0.5em; }
+  #editor blockquote {
+    border-left: 2px solid var(--accent);
+    padding-left: 20px;
+    margin: 1.5em 0;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  #editor ul, #editor ol { padding-left: 24px; margin-bottom: 1em; }
+  #editor li { margin-bottom: 0.4em; }
+  #editor a { color: var(--accent-dim); }
+  #editor code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--btn-hover);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ── Status Bar ── */
+  #statusbar {
+    height: 28px;
+    background: var(--surface);
+    border-top: 1px solid var(--toolbar-border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+  }
+  #statusbar .sb-item { display: flex; gap: 4px; align-items: center; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-bg);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 28px;
+    width: 440px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  }
+  .modal h2 {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .modal label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .modal input[type=text] {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 16px;
+  }
+  .modal input[type=text]:focus { border-color: var(--accent); }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+  .modal-actions button {
+    padding: 8px 18px;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    transition: background 0.12s;
+  }
+  .modal-actions button:hover { background: var(--btn-hover); color: var(--text); }
+  .modal-actions button.primary {
+    background: var(--sidebar-bg);
+    color: #fff;
+    border-color: var(--sidebar-bg);
+  }
+  .modal-actions button.primary:hover { background: #2e2c29; }
+
+  /* Project list in open modal */
+  .project-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+  }
+  .project-list-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.12s;
+  }
+  .project-list-item:last-child { border-bottom: none; }
+  .project-list-item:hover { background: var(--btn-hover); }
+  .project-list-item .proj-name { font-weight: 400; }
+  .project-list-item .proj-meta { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); }
+  .project-list-item.selected { background: var(--btn-active); }
+
+  .empty-msg {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-faint);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  /* ── Find/Replace ── */
+  #find-bar {
+    position: absolute;
+    top: 80px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    padding: 12px;
+    z-index: 200;
+    width: 300px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    display: none;
+  }
+  #find-bar.visible { display: block; }
+  #find-bar input {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    outline: none;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  #find-bar input:focus { border-color: var(--accent); }
+  #find-bar .find-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  #find-bar button {
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+  }
+  #find-bar button:hover { background: var(--btn-hover); color: var(--text); }
+  #find-count { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); margin-bottom: 6px; }
+
+  /* Drag reorder */
+  .chapter-item.drag-over { border-top: 2px solid var(--accent); }
+
+  /* No project screen */
+  #no-project {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--text-faint);
+  }
+  #no-project .np-logo {
+    font-family: var(--font-serif);
+    font-size: 48px;
+    font-style: italic;
+    color: var(--text-faint);
+    opacity: 0.4;
+  }
+  #no-project p { font-size: 14px; }
+  #no-project .np-actions { display: flex; gap: 10px; }
+  #no-project button {
+    padding: 10px 24px;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid var(--border-dark);
+    background: var(--surface);
+    color: var(--text-muted);
+    transition: background 0.15s, color 0.15s;
+  }
+  #no-project button:hover { background: var(--btn-hover); color: var(--text); }
+  #no-project button.primary {
+    background: var(--sidebar-bg);
+    color: var(--accent);
+    border-color: var(--sidebar-bg);
+  }
+  #no-project button.primary:hover { background: #2e2c29; }
+</style>
+</head>
+<body>
+
+<!-- Titlebar -->
+<div id="titlebar">
+  <span class="logo">Wordsmith</span>
+  <span class="project-title" id="project-title-display">No project open</span>
+  <div class="tb-actions">
+    <button onclick="showNewProject()">New</button>
+    <button onclick="showOpenProject()">Open</button>
+    <button class="primary" onclick="saveProject()">Save</button>
+  </div>
+</div>
+
+<div id="app">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sidebar-section">Chapters</div>
+    <div class="chapter-list" id="chapter-list"></div>
+    <button class="add-chapter-btn" id="add-ch-btn" onclick="addChapter()" style="display:none">+ Add Chapter</button>
+    <div class="sidebar-stats" id="sidebar-stats" style="display:none">
+      <div>Project: <span id="stat-total-words">0</span> words</div>
+      <div>Chapter: <span id="stat-ch-words">0</span> words</div>
+    </div>
+  </div>
+
+  <!-- Editor Area -->
+  <div id="editor-area">
+
+    <!-- No project screen -->
+    <div id="no-project">
+      <div class="np-logo">W</div>
+      <p>Start writing something worth reading.</p>
+      <div class="np-actions">
+        <button class="primary" onclick="showNewProject()">New Project</button>
+        <button onclick="showOpenProject()">Open Project</button>
+      </div>
+    </div>
+
+    <!-- Editor wrapper (hidden until project open) -->
+    <div id="editor-wrapper" style="display:none; flex-direction:column; flex:1; overflow:hidden; position:relative;">
+
+      <!-- Toolbar -->
+      <div id="toolbar">
+        <div class="tb-group">
+          <select class="tb-select" id="font-family" onchange="execFmt('fontName', this.value)" style="width:130px">
+            <option value="Georgia">Georgia</option>
+            <option value="'Playfair Display', serif">Playfair Display</option>
+            <option value="'Times New Roman', serif">Times New Roman</option>
+            <option value="Palatino, serif">Palatino</option>
+            <option value="Garamond, serif">Garamond</option>
+            <option value="'DM Sans', sans-serif">DM Sans</option>
+            <option value="'Helvetica Neue', sans-serif">Helvetica Neue</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="'DM Mono', monospace">DM Mono</option>
+          </select>
+        </div>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <input type="number" id="font-size-input" value="17" min="8" max="72" onchange="setFontSize(this.value)" title="Font size">
+        </div>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <button class="tb-btn" onclick="execFmt('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button class="tb-btn" onclick="execFmt('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button class="tb-btn" onclick="execFmt('underline')" title="Underline (Ctrl+U)" style="text-decoration:underline">U</button>
+          <button class="tb-btn" onclick="execFmt('strikeThrough')" title="Strikethrough" style="text-decoration:line-through">S</button>
+        </div>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <div class="color-picker-wrap" title="Text color">
+            <div class="color-swatch" id="text-color-swatch"></div>
+            <input type="color" id="text-color" value="#1a1917" oninput="setTextColor(this.value)">
+          </div>
+          <div class="color-picker-wrap" title="Highlight color" style="margin-left:4px">
+            <div class="color-swatch" id="highlight-swatch" style="background:#fff9c4"></div>
+            <input type="color" id="highlight-color" value="#fff9c4" oninput="setHighlight(this.value)">
+          </div>
+        </div>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <select class="tb-select" id="heading-select" onchange="applyHeading(this.value)" style="width:90px">
+            <option value="p">Paragraph</option>
+            <option value="h1">Heading 1</option>
+            <option value="h2">Heading 2</option>
+            <option value="h3">Heading 3</option>
+            <option value="blockquote">Quote</option>
+          </select>
+        </div>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <button class="tb-btn" onclick="execFmt('justifyLeft')" title="Align left">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="10" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg>
+          </button>
+          <button class="tb-btn" onclick="execFmt('justifyCenter')" title="Center">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4"/><line x1="4" y1="8" x2="12" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg>
+          </button>
+          <button class="tb-btn" onclick="execFmt('justifyRight')" title="Align right">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4"/><line x1="6" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <button class="tb-btn" onclick="execFmt('insertUnorderedList')" title="Bullet list">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="3" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="3" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="3" cy="13" r="1" fill="currentColor" stroke="none"/><line x1="6" y1="5" x2="14" y2="5"/><line x1="6" y1="9" x2="14" y2="9"/><line x1="6" y1="13" x2="14" y2="13"/></svg>
+          </button>
+          <button class="tb-btn" onclick="execFmt('insertOrderedList')" title="Numbered list">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><text x="1.5" y="6" fill="currentColor" stroke="none" font-size="5" font-family="sans-serif">1.</text><text x="1.5" y="10" fill="currentColor" stroke="none" font-size="5" font-family="sans-serif">2.</text><text x="1.5" y="14" fill="currentColor" stroke="none" font-size="5" font-family="sans-serif">3.</text><line x1="7" y1="5" x2="14" y2="5"/><line x1="7" y1="9" x2="14" y2="9"/><line x1="7" y1="13" x2="14" y2="13"/></svg>
+          </button>
+        </div>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <button class="tb-btn" onclick="document.execCommand('undo')" title="Undo (Ctrl+Z)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8a5 5 0 1 1 1.4 3.5"/><polyline points="1,5 3,8 6,6"/></svg>
+          </button>
+          <button class="tb-btn" onclick="document.execCommand('redo')" title="Redo (Ctrl+Y)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8a5 5 0 1 0-1.4 3.5"/><polyline points="15,5 13,8 10,6"/></svg>
+          </button>
+        </div>
+        <div class="tb-sep"></div>
+        <div class="tb-group">
+          <button class="tb-btn" onclick="toggleFind()" title="Find & Replace (Ctrl+F)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4"/><line x1="9.5" y1="9.5" x2="14" y2="14"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Find bar -->
+      <div id="find-bar">
+        <input type="text" id="find-input" placeholder="Find…" oninput="doFind()">
+        <input type="text" id="replace-input" placeholder="Replace with…">
+        <div id="find-count"></div>
+        <div class="find-actions">
+          <button onclick="doReplace()">Replace</button>
+          <button onclick="doReplaceAll()">All</button>
+          <button onclick="toggleFind()">✕</button>
+        </div>
+      </div>
+
+      <!-- Editor scroll -->
+      <div id="editor-scroll">
+        <div id="chapter-header">
+          <input type="text" id="chapter-title-input" placeholder="Chapter title…" oninput="onChapterTitleChange()">
+          <div class="chapter-divider"></div>
+        </div>
+        <div id="editor" contenteditable="true" data-placeholder="Begin writing…" spellcheck="true"
+          oninput="onEditorInput()" onkeydown="onEditorKeyDown(event)" onmouseup="updateToolbarState()" onkeyup="updateToolbarState()"></div>
+      </div>
+
+      <!-- Statusbar -->
+      <div id="statusbar">
+        <div class="sb-item">Words: <span id="sb-words">0</span></div>
+        <div class="sb-item">Chars: <span id="sb-chars">0</span></div>
+        <div class="sb-item">Lines: <span id="sb-lines">1</span></div>
+        <div class="sb-item" id="sb-saved" style="margin-left:auto; color: #aaa9a5">Auto-saved</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modals -->
+<div id="modal-new-project" class="modal-overlay" style="display:none" onclick="closeModalOnOverlay(event,'modal-new-project')">
+  <div class="modal">
+    <h2>New Project</h2>
+    <label>Project Name</label>
+    <input type="text" id="new-proj-name" placeholder="My Novel" onkeydown="if(event.key==='Enter')createProject()">
+    <label>First Chapter Name</label>
+    <input type="text" id="new-ch-name" placeholder="Chapter 1" onkeydown="if(event.key==='Enter')createProject()">
+    <div class="modal-actions">
+      <button onclick="closeModal('modal-new-project')">Cancel</button>
+      <button class="primary" onclick="createProject()">Create</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-open-project" class="modal-overlay" style="display:none" onclick="closeModalOnOverlay(event,'modal-open-project')">
+  <div class="modal">
+    <h2>Open Project</h2>
+    <div class="project-list" id="open-proj-list"></div>
+    <label style="margin-top:8px">Or import from file</label>
+    <input type="file" id="import-file" accept=".wordsmith,.json" style="font-size:13px; margin-bottom:16px" onchange="importProject(event)">
+    <div class="modal-actions">
+      <button onclick="closeModal('modal-open-project')">Cancel</button>
+      <button class="primary" onclick="openSelectedProject()">Open</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-add-chapter" class="modal-overlay" style="display:none" onclick="closeModalOnOverlay(event,'modal-add-chapter')">
+  <div class="modal">
+    <h2>Add Chapter</h2>
+    <label>Chapter Name</label>
+    <input type="text" id="new-ch-name2" placeholder="Chapter 2" onkeydown="if(event.key==='Enter')confirmAddChapter()">
+    <div class="modal-actions">
+      <button onclick="closeModal('modal-add-chapter')">Cancel</button>
+      <button class="primary" onclick="confirmAddChapter()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// State
+// ═══════════════════════════════════════
+let state = {
+  projects: {},      // { id: { name, chapters: [{id,title,content}], created } }
+  currentProject: null,
+  currentChapter: null,
+  selectedOpenId: null,
+};
+
+const STORAGE_KEY = 'wordsmith_v1';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state.projects = JSON.parse(raw);
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.projects));
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// ═══════════════════════════════════════
+// Project ops
+// ═══════════════════════════════════════
+function showNewProject() {
+  document.getElementById('new-proj-name').value = '';
+  document.getElementById('new-ch-name').value = 'Chapter 1';
+  openModal('modal-new-project');
+  setTimeout(() => document.getElementById('new-proj-name').focus(), 50);
+}
+
+function createProject() {
+  const name = document.getElementById('new-proj-name').value.trim() || 'Untitled Project';
+  const chName = document.getElementById('new-ch-name').value.trim() || 'Chapter 1';
+  closeModal('modal-new-project');
+  const id = uid();
+  const chId = uid();
+  state.projects[id] = {
+    name,
+    created: Date.now(),
+    chapters: [{ id: chId, title: chName, content: '' }]
+  };
+  saveState();
+  openProject(id);
+}
+
+function showOpenProject() {
+  renderProjectList();
+  state.selectedOpenId = null;
+  openModal('modal-open-project');
+}
+
+function renderProjectList() {
+  const list = document.getElementById('open-proj-list');
+  const ids = Object.keys(state.projects);
+  if (!ids.length) {
+    list.innerHTML = '<div class="empty-msg">No projects yet. Create one first.</div>';
+    return;
+  }
+  list.innerHTML = ids.map(id => {
+    const p = state.projects[id];
+    const chCount = p.chapters.length;
+    const words = p.chapters.reduce((s, ch) => s + countWords(ch.content), 0);
+    return `<div class="project-list-item" onclick="selectOpenProject('${id}',this)">
+      <span class="proj-name">${esc(p.name)}</span>
+      <span class="proj-meta">${chCount} ch · ${words} w</span>
+    </div>`;
+  }).join('');
+}
+
+function selectOpenProject(id, el) {
+  state.selectedOpenId = id;
+  document.querySelectorAll('.project-list-item').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function openSelectedProject() {
+  if (!state.selectedOpenId) return;
+  closeModal('modal-open-project');
+  openProject(state.selectedOpenId);
+}
+
+function openProject(id) {
+  state.currentProject = id;
+  const proj = state.projects[id];
+  document.getElementById('project-title-display').textContent = proj.name;
+  document.getElementById('no-project').style.display = 'none';
+  const wrap = document.getElementById('editor-wrapper');
+  wrap.style.display = 'flex';
+  document.getElementById('add-ch-btn').style.display = '';
+  document.getElementById('sidebar-stats').style.display = '';
+  renderChapterList();
+  // Open first chapter
+  if (proj.chapters.length > 0) {
+    openChapter(proj.chapters[0].id);
+  }
+}
+
+function saveProject() {
+  if (!state.currentProject) return;
+  saveCurrentChapterContent();
+  saveState();
+  flashSaved('Saved');
+}
+
+function flashSaved(msg) {
+  const el = document.getElementById('sb-saved');
+  el.textContent = msg;
+  el.style.color = '#8ab18a';
+  setTimeout(() => { el.textContent = 'Auto-saved'; el.style.color = ''; }, 2000);
+}
+
+// ═══════════════════════════════════════
+// Chapter ops
+// ═══════════════════════════════════════
+function renderChapterList() {
+  const proj = state.projects[state.currentProject];
+  const list = document.getElementById('chapter-list');
+  list.innerHTML = '';
+  proj.chapters.forEach((ch, i) => {
+    const words = countWords(ch.content);
+    const item = document.createElement('div');
+    item.className = 'chapter-item' + (ch.id === state.currentChapter ? ' active' : '');
+    item.draggable = true;
+    item.dataset.id = ch.id;
+    item.innerHTML = `
+      <svg class="ch-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3">
+        <rect x="2" y="1" width="10" height="12" rx="1.5"/>
+        <line x1="4.5" y1="4.5" x2="9.5" y2="4.5"/>
+        <line x1="4.5" y1="7" x2="9.5" y2="7"/>
+        <line x1="4.5" y1="9.5" x2="7.5" y2="9.5"/>
+      </svg>
+      <span class="ch-name" title="${esc(ch.title)}">${esc(ch.title)}</span>
+      <span class="ch-word-count">${words}</span>
+      <button class="ch-del" title="Delete chapter" onclick="deleteChapter('${ch.id}',event)">✕</button>`;
+    item.addEventListener('click', () => openChapter(ch.id));
+    // Drag
+    item.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', ch.id); item.style.opacity = '0.5'; });
+    item.addEventListener('dragend', () => { item.style.opacity = ''; document.querySelectorAll('.chapter-item').forEach(x=>x.classList.remove('drag-over')); });
+    item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      const fromId = e.dataTransfer.getData('text/plain');
+      const toId = ch.id;
+      if (fromId !== toId) reorderChapter(fromId, toId);
+    });
+    list.appendChild(item);
+  });
+  updateTotalStats();
+}
+
+function reorderChapter(fromId, toId) {
+  const proj = state.projects[state.currentProject];
+  const fromIdx = proj.chapters.findIndex(c => c.id === fromId);
+  const toIdx = proj.chapters.findIndex(c => c.id === toId);
+  if (fromIdx < 0 || toIdx < 0) return;
+  const [moved] = proj.chapters.splice(fromIdx, 1);
+  proj.chapters.splice(toIdx, 0, moved);
+  saveState();
+  renderChapterList();
+}
+
+function openChapter(id) {
+  saveCurrentChapterContent();
+  state.currentChapter = id;
+  const proj = state.projects[state.currentProject];
+  const ch = proj.chapters.find(c => c.id === id);
+  if (!ch) return;
+  document.getElementById('chapter-title-input').value = ch.title;
+  document.getElementById('editor').innerHTML = ch.content;
+  document.getElementById('editor').focus();
+  renderChapterList();
+  updateStats();
+}
+
+function saveCurrentChapterContent() {
+  if (!state.currentProject || !state.currentChapter) return;
+  const proj = state.projects[state.currentProject];
+  const ch = proj.chapters.find(c => c.id === state.currentChapter);
+  if (!ch) return;
+  ch.content = document.getElementById('editor').innerHTML;
+}
+
+function onChapterTitleChange() {
+  if (!state.currentProject || !state.currentChapter) return;
+  const proj = state.projects[state.currentProject];
+  const ch = proj.chapters.find(c => c.id === state.currentChapter);
+  if (!ch) return;
+  ch.title = document.getElementById('chapter-title-input').value;
+  renderChapterList();
+}
+
+function addChapter() {
+  document.getElementById('new-ch-name2').value = 'Chapter ' + (state.projects[state.currentProject].chapters.length + 1);
+  openModal('modal-add-chapter');
+  setTimeout(() => document.getElementById('new-ch-name2').focus(), 50);
+}
+
+function confirmAddChapter() {
+  const name = document.getElementById('new-ch-name2').value.trim() || 'Untitled';
+  closeModal('modal-add-chapter');
+  const id = uid();
+  state.projects[state.currentProject].chapters.push({ id, title: name, content: '' });
+  saveState();
+  renderChapterList();
+  openChapter(id);
+}
+
+function deleteChapter(id, e) {
+  e.stopPropagation();
+  const proj = state.projects[state.currentProject];
+  if (proj.chapters.length <= 1) { alert('A project must have at least one chapter.'); return; }
+  if (!confirm('Delete this chapter? This cannot be undone.')) return;
+  const idx = proj.chapters.findIndex(c => c.id === id);
+  proj.chapters.splice(idx, 1);
+  saveState();
+  if (state.currentChapter === id) {
+    state.currentChapter = null;
+    const next = proj.chapters[Math.min(idx, proj.chapters.length - 1)];
+    openChapter(next.id);
+  } else {
+    renderChapterList();
+  }
+}
+
+// ═══════════════════════════════════════
+// Formatting
+// ═══════════════════════════════════════
+function execFmt(cmd, val) {
+  document.getElementById('editor').focus();
+  document.execCommand(cmd, false, val || null);
+  updateToolbarState();
+}
+
+function setFontSize(size) {
+  const s = Math.max(8, Math.min(72, parseInt(size) || 17));
+  document.getElementById('font-size-input').value = s;
+  document.getElementById('editor').focus();
+  document.execCommand('fontSize', false, '7');
+  document.querySelectorAll('#editor font[size="7"]').forEach(el => {
+    el.removeAttribute('size');
+    el.style.fontSize = s + 'px';
+  });
+}
+
+function setTextColor(val) {
+  document.getElementById('text-color-swatch').style.background = val;
+  document.getElementById('editor').focus();
+  document.execCommand('foreColor', false, val);
+}
+
+function setHighlight(val) {
+  document.getElementById('highlight-swatch').style.background = val;
+  document.getElementById('editor').focus();
+  document.execCommand('hiliteColor', false, val);
+}
+
+function applyHeading(tag) {
+  document.getElementById('editor').focus();
+  if (tag === 'blockquote') {
+    document.execCommand('formatBlock', false, 'blockquote');
+  } else {
+    document.execCommand('formatBlock', false, tag);
+  }
+}
+
+function updateToolbarState() {
+  ['bold','italic','underline','strikeThrough'].forEach(cmd => {
+    const btns = document.querySelectorAll(`#toolbar .tb-btn`);
+    // Update based on queryCommandState
+  });
+  // Detect block type
+  const block = document.queryCommandValue('formatBlock').toLowerCase();
+  const hs = document.getElementById('heading-select');
+  if (block === 'blockquote') hs.value = 'blockquote';
+  else if (['h1','h2','h3'].includes(block)) hs.value = block;
+  else hs.value = 'p';
+}
+
+// ═══════════════════════════════════════
+// Stats
+// ═══════════════════════════════════════
+function countWords(html) {
+  const text = html.replace(/<[^>]+>/g, ' ').trim();
+  if (!text) return 0;
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+let autoSaveTimer;
+function onEditorInput() {
+  updateStats();
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    saveCurrentChapterContent();
+    saveState();
+    flashSaved('Auto-saved');
+  }, 1500);
+}
+
+function updateStats() {
+  const ed = document.getElementById('editor');
+  const text = ed.innerText || '';
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const chars = text.length;
+  const lines = text.split('\n').length;
+  document.getElementById('sb-words').textContent = words.toLocaleString();
+  document.getElementById('sb-chars').textContent = chars.toLocaleString();
+  document.getElementById('sb-lines').textContent = lines;
+  document.getElementById('stat-ch-words').textContent = words.toLocaleString();
+  updateTotalStats();
+}
+
+function updateTotalStats() {
+  if (!state.currentProject) return;
+  const proj = state.projects[state.currentProject];
+  const total = proj.chapters.reduce((s, ch) => {
+    const c = ch.id === state.currentChapter
+      ? document.getElementById('editor').innerHTML
+      : ch.content;
+    return s + countWords(c);
+  }, 0);
+  document.getElementById('stat-total-words').textContent = total.toLocaleString();
+}
+
+// ═══════════════════════════════════════
+// Find & Replace
+// ═══════════════════════════════════════
+let findVisible = false;
+function toggleFind() {
+  findVisible = !findVisible;
+  document.getElementById('find-bar').classList.toggle('visible', findVisible);
+  if (findVisible) document.getElementById('find-input').focus();
+}
+
+function doFind() {
+  const term = document.getElementById('find-input').value;
+  document.getElementById('find-count').textContent = '';
+  if (!term) return;
+  const ed = document.getElementById('editor');
+  const text = ed.innerText;
+  const regex = new RegExp(escRegex(term), 'gi');
+  const matches = [...text.matchAll(regex)];
+  document.getElementById('find-count').textContent = matches.length + ' match' + (matches.length !== 1 ? 'es' : '');
+}
+
+function doReplace() {
+  const find = document.getElementById('find-input').value;
+  const rep = document.getElementById('replace-input').value;
+  if (!find) return;
+  document.getElementById('editor').focus();
+  window.find(find);
+  document.execCommand('insertText', false, rep);
+  doFind();
+}
+
+function doReplaceAll() {
+  const find = document.getElementById('find-input').value;
+  const rep = document.getElementById('replace-input').value;
+  if (!find) return;
+  const ed = document.getElementById('editor');
+  ed.innerHTML = ed.innerHTML.replace(new RegExp(escRegex(find), 'gi'), rep);
+  doFind();
+  onEditorInput();
+}
+
+function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// ═══════════════════════════════════════
+// Import / Export
+// ═══════════════════════════════════════
+function importProject(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.name || !data.chapters) { alert('Invalid project file.'); return; }
+      const id = uid();
+      state.projects[id] = data;
+      saveState();
+      closeModal('modal-open-project');
+      openProject(id);
+    } catch { alert('Could not read file.'); }
+  };
+  reader.readAsText(file);
+}
+
+// Export current project as .wordsmith file
+function exportProject() {
+  if (!state.currentProject) return;
+  saveCurrentChapterContent();
+  const proj = state.projects[state.currentProject];
+  const blob = new Blob([JSON.stringify(proj, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = proj.name.replace(/[^a-z0-9]/gi, '_') + '.wordsmith';
+  a.click();
+}
+
+// Export as plain text
+function exportText() {
+  if (!state.currentProject) return;
+  saveCurrentChapterContent();
+  const proj = state.projects[state.currentProject];
+  let text = proj.name + '\n' + '═'.repeat(40) + '\n\n';
+  proj.chapters.forEach(ch => {
+    text += ch.title + '\n' + '─'.repeat(30) + '\n\n';
+    const el = document.createElement('div');
+    el.innerHTML = ch.content;
+    text += (el.innerText || '') + '\n\n';
+  });
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = proj.name.replace(/[^a-z0-9]/gi, '_') + '.txt';
+  a.click();
+}
+
+// ═══════════════════════════════════════
+// Keyboard shortcuts
+// ═══════════════════════════════════════
+function onEditorKeyDown(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveProject(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); toggleFind(); }
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveProject(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); toggleFind(); }
+  if (e.key === 'Escape') {
+    if (findVisible) toggleFind();
+    ['modal-new-project','modal-open-project','modal-add-chapter'].forEach(closeModal);
+  }
+});
+
+// ═══════════════════════════════════════
+// Modal helpers
+// ═══════════════════════════════════════
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function closeModalOnOverlay(e, id) { if (e.target === e.currentTarget) closeModal(id); }
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════
+// Right-click context menu extras
+// ═══════════════════════════════════════
+// Append export to titlebar on load
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  // Add export buttons
+  const actions = document.querySelector('#titlebar .tb-actions');
+  const expBtn = document.createElement('button');
+  expBtn.textContent = 'Export';
+  expBtn.onclick = () => {
+    const choice = prompt('Export as:\n1 = Project file (.wordsmith)\n2 = Plain text (.txt)\nEnter 1 or 2:');
+    if (choice === '1') exportProject();
+    else if (choice === '2') exportText();
+  };
+  actions.insertBefore(expBtn, actions.children[1]);
+});
+</script>
+</body>
+</html>
