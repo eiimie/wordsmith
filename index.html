@@ -4,1272 +4,1700 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wordsmith</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap');
+:root {
+  --bg: #f5f2ec;
+  --bg2: #edeae3;
+  --bg3: #e3dfd7;
+  --surface: #ffffff;
+  --surface2: #f9f7f4;
+  --border: #d6d1c8;
+  --border2: #c8c2b8;
+  --text: #1a1714;
+  --text2: #4a4540;
+  --text3: #7a7570;
+  --accent: #8b4513;
+  --accent2: #a0522d;
+  --accent-light: #f0e6dc;
+  --accent-text: #ffffff;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow2: 0 4px 20px rgba(0,0,0,0.12);
+  --radius: 8px;
+  --font-ui: 'DM Sans', sans-serif;
+  --font-serif: 'EB Garamond', serif;
+  --font-display: 'Playfair Display', serif;
+}
+[data-theme="dark"] {
+  --bg: #141210;
+  --bg2: #1c1916;
+  --bg3: #252220;
+  --surface: #1e1b18;
+  --surface2: #252220;
+  --border: #3a3530;
+  --border2: #4a4540;
+  --text: #f0ece4;
+  --text2: #b8b0a4;
+  --text3: #7a7570;
+  --accent: #c8724a;
+  --accent2: #d4855e;
+  --accent-light: #2a1f18;
+  --accent-text: #ffffff;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow2: 0 4px 20px rgba(0,0,0,0.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-ui); background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-  :root {
-    --bg: #f7f6f3;
-    --surface: #ffffff;
-    --sidebar-bg: #1a1917;
-    --sidebar-text: #c8c4bc;
-    --sidebar-muted: #6b6761;
-    --sidebar-hover: #252320;
-    --sidebar-active: #2e2c29;
-    --accent: #c9a96e;
-    --accent-dim: #8a6f44;
-    --text: #1a1917;
-    --text-muted: #7a7772;
-    --text-faint: #b5b2ac;
-    --border: #e5e2dc;
-    --border-dark: #d0ccc5;
-    --toolbar-bg: #ffffff;
-    --toolbar-border: #eeebe6;
-    --btn-hover: #f0ede8;
-    --btn-active: #e8e4de;
-    --modal-bg: rgba(26,25,23,0.55);
-    --radius: 6px;
-    --font-ui: 'DM Sans', sans-serif;
-    --font-serif: 'Playfair Display', serif;
-    --font-mono: 'DM Mono', monospace;
-  }
+/* ════════════════════════════════════════
+   LANDING PAGE
+════════════════════════════════════════ */
+#landing { display: flex; flex-direction: column; min-height: 100vh; }
+#landing.hidden { display: none !important; }
 
-  body {
-    font-family: var(--font-ui);
-    background: var(--bg);
-    color: var(--text);
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
+.landing-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 40px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.landing-logo { font-family: var(--font-display); font-size: 1.6rem; color: var(--accent); letter-spacing: -0.02em; }
+.landing-logo span { color: var(--text3); font-weight: 400; font-size: 0.9rem; margin-left: 8px; font-family: var(--font-ui); }
+.header-actions { display: flex; gap: 10px; align-items: center; }
 
-  /* ── Titlebar ── */
-  #titlebar {
-    height: 44px;
-    background: var(--sidebar-bg);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 12px;
-    flex-shrink: 0;
-    border-bottom: 1px solid #111;
-    z-index: 100;
-  }
-  #titlebar .logo {
-    font-family: var(--font-serif);
-    font-size: 15px;
-    color: var(--accent);
-    letter-spacing: 0.04em;
-    font-style: italic;
-  }
-  #titlebar .project-title {
-    flex: 1;
-    text-align: center;
-    font-size: 13px;
-    color: var(--sidebar-muted);
-    letter-spacing: 0.02em;
-    font-weight: 300;
-  }
-  #titlebar .tb-actions {
-    display: flex;
-    gap: 6px;
-  }
-  #titlebar button {
-    background: none;
-    border: 1px solid #3a3835;
-    color: var(--sidebar-text);
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-family: var(--font-ui);
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  #titlebar button:hover { background: #2a2825; border-color: #555; }
-  #titlebar button.primary {
-    background: var(--accent-dim);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  #titlebar button.primary:hover { background: var(--accent); }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+  border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text2); font-family: var(--font-ui); font-size: 0.85rem; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap; font-weight: 400;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.btn-primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 500; }
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: var(--accent-text); }
+.btn-icon { padding: 8px; }
+.btn-ghost { border-color: transparent; background: transparent; }
+.btn-ghost:hover { background: var(--bg3); border-color: var(--border); color: var(--text); }
+.btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+.btn-danger:hover { border-color: #c0392b; color: #c0392b; background: #fdf0ef; }
 
-  /* ── Layout ── */
-  #app {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+.landing-content { flex: 1; padding: 40px; max-width: 1200px; margin: 0 auto; width: 100%; }
+.landing-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+.landing-title-row { display: flex; align-items: baseline; gap: 12px; }
+.landing-title-row h1 { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--text); }
+.project-count { color: var(--text3); font-size: 0.85rem; }
+.landing-actions { display: flex; gap: 8px; }
 
-  /* ── Sidebar ── */
-  #sidebar {
-    width: 220px;
-    flex-shrink: 0;
-    background: var(--sidebar-bg);
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #111;
-    overflow: hidden;
-  }
-  .sidebar-section {
-    padding: 16px 12px 8px;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--sidebar-muted);
-  }
-  .chapter-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 8px 8px;
-  }
-  .chapter-list::-webkit-scrollbar { width: 4px; }
-  .chapter-list::-webkit-scrollbar-thumb { background: #3a3835; border-radius: 2px; }
-  .chapter-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    color: var(--sidebar-text);
-    font-size: 13px;
-    font-weight: 300;
-    transition: background 0.12s;
-    user-select: none;
-    position: relative;
-  }
-  .chapter-item:hover { background: var(--sidebar-hover); }
-  .chapter-item.active { background: var(--sidebar-active); color: var(--accent); }
-  .chapter-item .ch-icon {
-    width: 14px;
-    height: 14px;
-    opacity: 0.4;
-    flex-shrink: 0;
-  }
-  .chapter-item.active .ch-icon { opacity: 0.8; }
-  .chapter-item .ch-name {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .chapter-item .ch-del {
-    opacity: 0;
-    background: none;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-size: 14px;
-    line-height: 1;
-    transition: color 0.12s;
-  }
-  .chapter-item:hover .ch-del { opacity: 1; }
-  .chapter-item .ch-del:hover { color: #e07070; }
-  .ch-word-count {
-    font-size: 10px;
-    color: var(--sidebar-muted);
-    font-family: var(--font-mono);
-  }
-  .add-chapter-btn {
-    margin: 8px;
-    padding: 8px;
-    background: none;
-    border: 1px dashed #333;
-    color: var(--sidebar-muted);
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: var(--font-ui);
-    font-size: 12px;
-    text-align: center;
-    transition: border-color 0.15s, color 0.15s;
-  }
-  .add-chapter-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; }
+.project-card {
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  box-shadow: var(--shadow); transition: all 0.2s; border: 1px solid var(--border);
+  background: var(--surface); position: relative;
+}
+.project-card:hover { transform: translateY(-3px); box-shadow: var(--shadow2); border-color: var(--accent); }
+.card-cover {
+  height: 140px; position: relative; display: flex; align-items: flex-end; padding: 14px;
+  background: linear-gradient(135deg, var(--cover-a), var(--cover-b));
+}
+.card-cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+}
+.card-cover-title {
+  font-family: var(--font-display); color: #fff; font-size: 0.95rem; font-weight: 700;
+  position: relative; z-index: 1; line-height: 1.3; text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+}
+.card-body { padding: 12px 14px 10px; }
+.card-name { font-size: 0.88rem; font-weight: 500; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta { font-size: 0.75rem; color: var(--text3); display: flex; gap: 10px; }
+.card-actions {
+  position: absolute; top: 8px; right: 8px; display: flex; gap: 4px;
+  opacity: 0; transition: opacity 0.15s; z-index: 10;
+}
+.project-card:hover .card-actions { opacity: 1; }
+.card-action-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.9); color: var(--text2); font-size: 0.8rem;
+  transition: all 0.15s;
+}
+.card-action-btn:hover { background: white; color: var(--accent); }
+.card-action-btn.del:hover { color: #c0392b; }
 
-  .sidebar-stats {
-    padding: 12px;
-    border-top: 1px solid #252320;
-    font-size: 11px;
-    color: var(--sidebar-muted);
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .sidebar-stats span { font-family: var(--font-mono); color: var(--sidebar-text); }
+.empty-state { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text3); }
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.5; }
+.empty-state p { font-size: 1rem; }
 
-  /* ── Editor Area ── */
-  #editor-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--bg);
-  }
+/* ════════════════════════════════════════
+   EDITOR LAYOUT
+════════════════════════════════════════ */
+#editor-view { display: none; flex-direction: column; height: 100vh; overflow: hidden; }
+#editor-view.active { display: flex; }
 
-  /* ── Toolbar ── */
-  #toolbar {
-    background: var(--toolbar-bg);
-    border-bottom: 1px solid var(--toolbar-border);
-    padding: 6px 16px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-  }
-  .tb-group {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-  .tb-sep {
-    width: 1px;
-    height: 20px;
-    background: var(--border);
-    margin: 0 6px;
-  }
-  .tb-btn {
-    background: none;
-    border: none;
-    width: 30px;
-    height: 30px;
-    border-radius: var(--radius);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    font-size: 14px;
-    transition: background 0.12s, color 0.12s;
-    font-family: var(--font-ui);
-    font-weight: 500;
-  }
-  .tb-btn:hover { background: var(--btn-hover); color: var(--text); }
-  .tb-btn.active { background: var(--btn-active); color: var(--text); }
-  .tb-btn svg { width: 15px; height: 15px; }
+/* TOP BAR */
+.editor-topbar {
+  display: flex; align-items: center; gap: 8px; padding: 0 12px;
+  height: 52px; background: var(--surface); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; z-index: 100; transition: all 0.3s;
+}
+.topbar-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.topbar-center { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; justify-content: center; }
+.topbar-right { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; }
+.project-name-display { font-family: var(--font-display); font-size: 1rem; color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 
-  .tb-select {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    padding: 4px 8px;
-    border-radius: var(--radius);
-    font-family: var(--font-ui);
-    font-size: 12px;
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.12s;
-  }
-  .tb-select:hover { border-color: var(--border-dark); }
-  .tb-select:focus { border-color: var(--accent); }
+/* TOOLBAR BUTTONS */
+.tb-btn {
+  height: 30px; min-width: 30px; padding: 0 6px; border-radius: 5px;
+  border: 1px solid transparent; background: transparent; color: var(--text2);
+  font-family: var(--font-ui); font-size: 0.8rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+  transition: all 0.12s; white-space: nowrap;
+}
+.tb-btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border); }
+.tb-btn.active { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+.tb-btn strong { font-weight: 700; font-size: 0.85rem; }
+.tb-sep { width: 1px; height: 20px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
 
-  #font-size-input {
-    width: 48px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    padding: 4px 6px;
-    border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    text-align: center;
-    outline: none;
-  }
-  #font-size-input:focus { border-color: var(--accent); }
+.tb-select {
+  height: 30px; padding: 0 6px; border-radius: 5px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text2); font-family: var(--font-ui);
+  font-size: 0.78rem; cursor: pointer; outline: none; transition: all 0.12s;
+}
+.tb-select:hover, .tb-select:focus { border-color: var(--accent); color: var(--text); }
 
-  .color-picker-wrap {
-    position: relative;
-    width: 30px;
-    height: 30px;
-    border-radius: var(--radius);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    transition: border-color 0.12s;
-  }
-  .color-picker-wrap:hover { border-color: var(--border-dark); }
-  .color-picker-wrap input[type=color] {
-    position: absolute;
-    width: 150%;
-    height: 150%;
-    border: none;
-    cursor: pointer;
-    opacity: 0;
-  }
-  .color-swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    background: #1a1917;
-    pointer-events: none;
-  }
+/* MAIN BODY */
+.editor-body { display: flex; flex: 1; overflow: hidden; }
 
-  /* ── Editor Scroll ── */
-  #editor-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding: 40px 0 80px;
-    background: var(--bg);
-  }
-  #editor-scroll::-webkit-scrollbar { width: 6px; }
-  #editor-scroll::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+/* SIDEBAR */
+.sidebar {
+  width: 240px; background: var(--surface2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.25s, opacity 0.25s;
+  overflow: hidden;
+}
+.sidebar.collapsed { width: 0; opacity: 0; pointer-events: none; }
+.sidebar-header { padding: 14px 14px 8px; border-bottom: 1px solid var(--border); }
+.sidebar-project { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-stats { font-size: 0.72rem; color: var(--text3); }
+.sidebar-chapters-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px 6px; font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.chapters-list { flex: 1; overflow-y: auto; padding: 4px 8px; }
+.chapter-item {
+  display: flex; align-items: center; gap: 6px; padding: 7px 8px; border-radius: 6px;
+  cursor: pointer; transition: all 0.12s; border: 1px solid transparent; margin-bottom: 2px;
+}
+.chapter-item:hover { background: var(--bg3); }
+.chapter-item.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.chapter-drag { color: var(--text3); font-size: 0.7rem; cursor: grab; flex-shrink: 0; opacity: 0; transition: opacity 0.1s; }
+.chapter-item:hover .chapter-drag { opacity: 1; }
+.chapter-number { font-size: 0.7rem; color: var(--text3); min-width: 18px; flex-shrink: 0; }
+.chapter-item.active .chapter-number { color: var(--accent); opacity: 0.7; }
+.chapter-name-wrap { flex: 1; min-width: 0; }
+.chapter-name { font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chapter-wordcount { font-size: 0.68rem; color: var(--text3); }
+.chapter-item.active .chapter-wordcount { color: var(--accent); opacity: 0.7; }
+.chapter-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.1s; flex-shrink: 0; }
+.chapter-item:hover .chapter-actions { opacity: 1; }
+.chapter-act-btn {
+  width: 20px; height: 20px; border-radius: 4px; border: none; background: transparent;
+  color: var(--text3); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.1s;
+}
+.chapter-act-btn:hover { background: var(--bg); color: var(--accent); }
+.chapter-act-btn.del:hover { color: #c0392b; }
 
-  /* ── Chapter Header ── */
-  #chapter-header {
-    max-width: 720px;
-    margin: 0 auto 24px;
-    padding: 0 40px;
-  }
-  #chapter-title-input {
-    width: 100%;
-    border: none;
-    background: none;
-    font-family: var(--font-serif);
-    font-size: 32px;
-    font-weight: 500;
-    color: var(--text);
-    outline: none;
-    padding: 0;
-    line-height: 1.3;
-  }
-  #chapter-title-input::placeholder { color: var(--text-faint); }
-  .chapter-divider {
-    height: 1px;
-    background: var(--border);
-    margin-top: 16px;
-  }
+.sidebar-footer { padding: 10px 8px; border-top: 1px solid var(--border); }
 
-  /* ── Editor ── */
-  #editor {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 0 40px;
-    min-height: 600px;
-    outline: none;
-    font-size: 17px;
-    line-height: 1.85;
-    color: var(--text);
-    caret-color: var(--accent);
-    font-family: 'Georgia', serif;
-  }
-  #editor:empty::before {
-    content: attr(data-placeholder);
-    color: var(--text-faint);
-    pointer-events: none;
-    font-style: italic;
-  }
-  #editor p { margin-bottom: 1.1em; }
-  #editor h1 { font-family: var(--font-serif); font-size: 26px; font-weight: 500; margin-bottom: 0.6em; line-height: 1.3; }
-  #editor h2 { font-family: var(--font-serif); font-size: 21px; font-weight: 500; margin-bottom: 0.6em; line-height: 1.35; }
-  #editor h3 { font-family: var(--font-serif); font-size: 18px; font-style: italic; margin-bottom: 0.5em; }
-  #editor blockquote {
-    border-left: 2px solid var(--accent);
-    padding-left: 20px;
-    margin: 1.5em 0;
-    color: var(--text-muted);
-    font-style: italic;
-  }
-  #editor ul, #editor ol { padding-left: 24px; margin-bottom: 1em; }
-  #editor li { margin-bottom: 0.4em; }
-  #editor a { color: var(--accent-dim); }
-  #editor code {
-    font-family: var(--font-mono);
-    font-size: 0.88em;
-    background: var(--btn-hover);
-    padding: 1px 5px;
-    border-radius: 3px;
-  }
+/* WRITING AREA */
+.writing-area {
+  flex: 1; overflow-y: auto; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; padding: 40px 20px 80px;
+  position: relative;
+}
+.writing-area.focus-mode { background: var(--bg2); }
 
-  /* ── Status Bar ── */
-  #statusbar {
-    height: 28px;
-    background: var(--surface);
-    border-top: 1px solid var(--toolbar-border);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 16px;
-    font-size: 11px;
-    color: var(--text-faint);
-    font-family: var(--font-mono);
-    flex-shrink: 0;
-  }
-  #statusbar .sb-item { display: flex; gap: 4px; align-items: center; }
+.page-canvas {
+  width: 100%; max-width: 720px; background: var(--surface); min-height: calc(100vh - 200px);
+  box-shadow: var(--shadow2); border-radius: 4px; padding: 64px 72px;
+  position: relative; transition: max-width 0.3s;
+}
+.focus-mode .page-canvas { max-width: 640px; box-shadow: none; background: transparent; }
 
-  /* ── Modal ── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--modal-bg);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .modal {
-    background: var(--surface);
-    border-radius: 10px;
-    padding: 28px;
-    width: 440px;
-    max-width: 90vw;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-  }
-  .modal h2 {
-    font-family: var(--font-serif);
-    font-size: 20px;
-    font-weight: 500;
-    margin-bottom: 20px;
-    color: var(--text);
-  }
-  .modal label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .modal input[type=text] {
-    width: 100%;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    padding: 9px 12px;
-    border-radius: var(--radius);
-    font-family: var(--font-ui);
-    font-size: 14px;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-    margin-bottom: 16px;
-  }
-  .modal input[type=text]:focus { border-color: var(--accent); }
-  .modal-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin-top: 4px;
-  }
-  .modal-actions button {
-    padding: 8px 18px;
-    border-radius: var(--radius);
-    font-family: var(--font-ui);
-    font-size: 13px;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: none;
-    color: var(--text-muted);
-    transition: background 0.12s;
-  }
-  .modal-actions button:hover { background: var(--btn-hover); color: var(--text); }
-  .modal-actions button.primary {
-    background: var(--sidebar-bg);
-    color: #fff;
-    border-color: var(--sidebar-bg);
-  }
-  .modal-actions button.primary:hover { background: #2e2c29; }
+.chapter-title-input {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--text);
+  border: none; outline: none; background: transparent; width: 100%; margin-bottom: 8px;
+  line-height: 1.3;
+}
+.chapter-title-input::placeholder { color: var(--text3); }
+.chapter-divider { border: none; border-top: 1px solid var(--border); margin: 12px 0 28px; }
 
-  /* Project list in open modal */
-  .project-list {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 16px;
-  }
-  .project-list-item {
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 14px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.12s;
-  }
-  .project-list-item:last-child { border-bottom: none; }
-  .project-list-item:hover { background: var(--btn-hover); }
-  .project-list-item .proj-name { font-weight: 400; }
-  .project-list-item .proj-meta { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); }
-  .project-list-item.selected { background: var(--btn-active); }
+/* THE EDITOR */
+#editor {
+  font-family: var(--font-serif); font-size: 1.1rem; line-height: 1.8; color: var(--text);
+  outline: none; min-height: 400px; caret-color: var(--accent);
+  word-break: break-word;
+}
+#editor:empty::before { content: attr(data-placeholder); color: var(--text3); pointer-events: none; }
+#editor p { margin: 0 0 0.3em 0; }
+#editor p + p { margin-top: 0; }
+#editor h1 { font-family: var(--font-display); font-size: 2em; font-weight: 700; margin: 1.2em 0 0.4em; line-height: 1.2; }
+#editor h2 { font-family: var(--font-display); font-size: 1.6em; font-weight: 700; margin: 1em 0 0.4em; line-height: 1.3; }
+#editor h3 { font-family: var(--font-display); font-size: 1.3em; font-weight: 600; margin: 0.9em 0 0.3em; }
+#editor h4 { font-size: 1.1em; font-weight: 600; margin: 0.8em 0 0.3em; }
+#editor h5, #editor h6 { font-size: 1em; font-weight: 600; margin: 0.8em 0 0.3em; }
+#editor ul, #editor ol { padding-left: 1.8em; margin: 0.5em 0; }
+#editor li { margin: 0.2em 0; }
+#editor blockquote {
+  border-left: 3px solid var(--accent); padding-left: 1.2em; margin: 1em 0;
+  color: var(--text2); font-style: italic;
+}
+#editor pre, #editor code {
+  font-family: 'Courier New', monospace; background: var(--bg3); padding: 0.15em 0.4em;
+  border-radius: 3px; font-size: 0.9em;
+}
+#editor pre { display: block; padding: 1em; overflow-x: auto; border-radius: 6px; margin: 0.8em 0; }
+#editor img { max-width: 100%; height: auto; display: block; cursor: pointer; border-radius: 4px; }
+#editor img.align-center { margin: 1em auto; }
+#editor img.align-right { float: right; margin: 0.5em 0 0.5em 1.5em; }
+#editor img.align-left { float: left; margin: 0.5em 1.5em 0.5em 0; }
+#editor .drop-cap::first-letter {
+  float: left; font-family: var(--font-display); font-size: 3.8em; line-height: 0.75;
+  padding: 0.08em 0.12em 0 0; color: var(--accent); font-weight: 700;
+}
+#editor .tab-indent { text-indent: 2.5em; }
+#editor [style*="text-align: center"] { text-align: center; }
+#editor [style*="text-align: right"] { text-align: right; }
+#editor [style*="text-align: left"] { text-align: left; }
 
-  .empty-msg {
-    text-align: center;
-    padding: 24px;
-    color: var(--text-faint);
-    font-size: 13px;
-    font-style: italic;
-  }
+/* IMAGE RESIZE HANDLE */
+.img-selected { outline: 2px solid var(--accent); outline-offset: 2px; position: relative; }
 
-  /* ── Find/Replace ── */
-  #find-bar {
-    position: absolute;
-    top: 80px;
-    right: 24px;
-    background: var(--surface);
-    border: 1px solid var(--border-dark);
-    border-radius: 8px;
-    padding: 12px;
-    z-index: 200;
-    width: 300px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    display: none;
-  }
-  #find-bar.visible { display: block; }
-  #find-bar input {
-    width: 100%;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    padding: 6px 10px;
-    border-radius: 4px;
-    font-family: var(--font-ui);
-    font-size: 13px;
-    outline: none;
-    margin-bottom: 6px;
-    color: var(--text);
-  }
-  #find-bar input:focus { border-color: var(--accent); }
-  #find-bar .find-actions {
-    display: flex;
-    gap: 6px;
-    justify-content: flex-end;
-  }
-  #find-bar button {
-    font-size: 12px;
-    padding: 4px 10px;
-    border: 1px solid var(--border);
-    background: none;
-    border-radius: 4px;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-family: var(--font-ui);
-  }
-  #find-bar button:hover { background: var(--btn-hover); color: var(--text); }
-  #find-count { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); margin-bottom: 6px; }
+/* CHAPTER NAV */
+.chapter-nav { display: flex; justify-content: space-between; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
 
-  /* Drag reorder */
-  .chapter-item.drag-over { border-top: 2px solid var(--accent); }
+/* STATUS BAR */
+.status-bar {
+  display: flex; align-items: center; gap: 16px; padding: 6px 16px;
+  background: var(--surface); border-top: 1px solid var(--border); font-size: 0.75rem;
+  color: var(--text3); flex-shrink: 0; transition: all 0.3s;
+}
+.status-bar.hidden { display: none; }
+.status-item { display: flex; align-items: center; gap: 4px; }
+.status-sep { width: 1px; height: 12px; background: var(--border); }
 
-  /* No project screen */
-  #no-project {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    color: var(--text-faint);
-  }
-  #no-project .np-logo {
-    font-family: var(--font-serif);
-    font-size: 48px;
-    font-style: italic;
-    color: var(--text-faint);
-    opacity: 0.4;
-  }
-  #no-project p { font-size: 14px; }
-  #no-project .np-actions { display: flex; gap: 10px; }
-  #no-project button {
-    padding: 10px 24px;
-    border-radius: var(--radius);
-    font-family: var(--font-ui);
-    font-size: 14px;
-    cursor: pointer;
-    border: 1px solid var(--border-dark);
-    background: var(--surface);
-    color: var(--text-muted);
-    transition: background 0.15s, color 0.15s;
-  }
-  #no-project button:hover { background: var(--btn-hover); color: var(--text); }
-  #no-project button.primary {
-    background: var(--sidebar-bg);
-    color: var(--accent);
-    border-color: var(--sidebar-bg);
-  }
-  #no-project button.primary:hover { background: #2e2c29; }
+/* WORD GOAL PROGRESS */
+.goal-bar-wrap { display: flex; align-items: center; gap: 6px; }
+.goal-bar { width: 80px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.goal-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+
+/* ════════════════════════════════════════
+   MODALS
+════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); border-radius: 12px; box-shadow: var(--shadow2);
+  width: 90%; max-width: 460px; padding: 28px; border: 1px solid var(--border);
+  transform: scale(0.95); transition: transform 0.2s;
+}
+.modal-overlay.open .modal { transform: scale(1); }
+.modal-lg { max-width: 640px; }
+.modal h2 { font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 18px; color: var(--text); }
+.modal-field { margin-bottom: 16px; }
+.modal-field label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+.modal-input {
+  width: 100%; padding: 9px 12px; border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text); font-family: var(--font-ui); font-size: 0.9rem;
+  outline: none; transition: border-color 0.15s;
+}
+.modal-input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+/* SEARCH BAR */
+#search-bar {
+  position: fixed; top: 60px; right: 20px; z-index: 500; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow2);
+  padding: 12px; display: none; gap: 6px; align-items: center; flex-wrap: wrap; width: 360px;
+}
+#search-bar.open { display: flex; }
+#search-bar input {
+  flex: 1; min-width: 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg2); color: var(--text); font-size: 0.85rem; outline: none; font-family: var(--font-ui);
+}
+#search-bar input:focus { border-color: var(--accent); }
+.search-count { font-size: 0.75rem; color: var(--text3); white-space: nowrap; }
+
+/* CONTEXT MENU */
+.ctx-menu {
+  position: fixed; z-index: 2000; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow2); min-width: 140px; padding: 4px;
+  display: none;
+}
+.ctx-menu.open { display: block; }
+.ctx-item {
+  padding: 7px 12px; font-size: 0.82rem; cursor: pointer; border-radius: 4px; color: var(--text2);
+  transition: all 0.1s; display: flex; align-items: center; gap: 8px;
+}
+.ctx-item:hover { background: var(--accent-light); color: var(--accent); }
+.ctx-item.danger:hover { background: #fdf0ef; color: #c0392b; }
+.ctx-sep { height: 1px; background: var(--border); margin: 3px 0; }
+
+/* REVISION PANEL */
+#revision-panel {
+  width: 240px; background: var(--surface2); border-left: 1px solid var(--border);
+  display: none; flex-direction: column; flex-shrink: 0; overflow: hidden;
+}
+#revision-panel.open { display: flex; }
+.rev-header { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.82rem; font-weight: 500; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
+.rev-list { flex: 1; overflow-y: auto; padding: 8px; }
+.rev-item {
+  padding: 8px 10px; border-radius: 6px; cursor: pointer; margin-bottom: 4px;
+  border: 1px solid transparent; transition: all 0.12s;
+}
+.rev-item:hover { background: var(--bg3); border-color: var(--border); }
+.rev-time { font-size: 0.75rem; font-weight: 500; color: var(--text); }
+.rev-words { font-size: 0.7rem; color: var(--text3); }
+
+/* TOAST */
+#toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 8px;
+  font-size: 0.85rem; z-index: 9999; opacity: 0; transition: all 0.25s; pointer-events: none;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* FOCUS MODE */
+.focus-mode .editor-topbar { opacity: 0; pointer-events: none; height: 0; padding: 0; border: none; }
+.focus-mode .sidebar { opacity: 0; pointer-events: none; width: 0; }
+.focus-mode .status-bar { opacity: 0; pointer-events: none; height: 0; padding: 0; border: none; }
+.focus-mode:hover .editor-topbar { opacity: 0.95; pointer-events: all; height: 52px; padding: 0 12px; border-bottom: 1px solid var(--border); }
+.focus-mode:hover .status-bar { opacity: 0.95; pointer-events: all; height: auto; padding: 6px 16px; border-top: 1px solid var(--border); }
+
+/* EXPORT MENU */
+.dropdown-menu {
+  position: absolute; top: calc(100% + 4px); right: 0; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow2);
+  min-width: 160px; z-index: 300; padding: 4px; display: none;
+}
+.dropdown-menu.open { display: block; }
+.dropdown-wrap { position: relative; }
+.drop-item { padding: 7px 12px; font-size: 0.82rem; cursor: pointer; border-radius: 4px; color: var(--text2); display: flex; align-items: center; gap: 8px; transition: all 0.1s; }
+.drop-item:hover { background: var(--accent-light); color: var(--accent); }
+
+/* FONT UPLOAD */
+#font-upload-input, #image-upload-input, #import-input, #backup-import-input { display: none; }
+
+/* IMAGE CONTEXT TOOLBAR */
+#img-toolbar {
+  position: fixed; z-index: 400; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 4px; display: none; gap: 2px; align-items: center;
+}
+#img-toolbar.open { display: flex; }
+
+/* SPELLCHECK TOGGLE */
+body:not(.spell-on) #editor { spellcheck: false; }
+body.spell-on #editor { spellcheck: true; }
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .page-canvas { padding: 32px 24px; }
+  .topbar-center { display: none; }
+}
+
+/* LOADING SCREEN */
+.app-loading {
+  position: fixed; inset: 0; background: var(--bg); display: flex;
+  align-items: center; justify-content: center; z-index: 9998; flex-direction: column; gap: 16px;
+  font-family: var(--font-display); font-size: 2rem; color: var(--accent);
+}
+.app-loading small { font-family: var(--font-ui); font-size: 0.85rem; color: var(--text3); }
 </style>
 </head>
-<body>
+<body class="spell-on">
 
-<!-- Titlebar -->
-<div id="titlebar">
-  <span class="logo">Wordsmith</span>
-  <span class="project-title" id="project-title-display">No project open</span>
-  <div class="tb-actions">
-    <button onclick="showNewProject()">New</button>
-    <button onclick="showOpenProject()">Open</button>
-    <button class="primary" onclick="saveProject()">Save</button>
-  </div>
+<!-- LOADING -->
+<div class="app-loading" id="app-loading">
+  <div>Wordsmith</div>
+  <small>Loading your library…</small>
 </div>
 
-<div id="app">
-  <!-- Sidebar -->
-  <div id="sidebar">
-    <div class="sidebar-section">Chapters</div>
-    <div class="chapter-list" id="chapter-list"></div>
-    <button class="add-chapter-btn" id="add-ch-btn" onclick="addChapter()" style="display:none">+ Add Chapter</button>
-    <div class="sidebar-stats" id="sidebar-stats" style="display:none">
-      <div>Project: <span id="stat-total-words">0</span> words</div>
-      <div>Chapter: <span id="stat-ch-words">0</span> words</div>
-    </div>
-  </div>
+<!-- TOAST -->
+<div id="toast"></div>
 
-  <!-- Editor Area -->
-  <div id="editor-area">
-
-    <!-- No project screen -->
-    <div id="no-project">
-      <div class="np-logo">W</div>
-      <p>Start writing something worth reading.</p>
-      <div class="np-actions">
-        <button class="primary" onclick="showNewProject()">New Project</button>
-        <button onclick="showOpenProject()">Open Project</button>
-      </div>
-    </div>
-
-    <!-- Editor wrapper (hidden until project open) -->
-    <div id="editor-wrapper" style="display:none; flex-direction:column; flex:1; overflow:hidden; position:relative;">
-
-      <!-- Toolbar -->
-      <div id="toolbar">
-        <div class="tb-group">
-          <select class="tb-select" id="font-family" onchange="execFmt('fontName', this.value)" style="width:130px">
-            <option value="Georgia">Georgia</option>
-            <option value="'Playfair Display', serif">Playfair Display</option>
-            <option value="'Times New Roman', serif">Times New Roman</option>
-            <option value="Palatino, serif">Palatino</option>
-            <option value="Garamond, serif">Garamond</option>
-            <option value="'DM Sans', sans-serif">DM Sans</option>
-            <option value="'Helvetica Neue', sans-serif">Helvetica Neue</option>
-            <option value="Arial, sans-serif">Arial</option>
-            <option value="'Courier New', monospace">Courier New</option>
-            <option value="'DM Mono', monospace">DM Mono</option>
-          </select>
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <input type="number" id="font-size-input" value="17" min="8" max="72" onchange="setFontSize(this.value)" title="Font size">
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <button class="tb-btn" onclick="execFmt('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
-          <button class="tb-btn" onclick="execFmt('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
-          <button class="tb-btn" onclick="execFmt('underline')" title="Underline (Ctrl+U)" style="text-decoration:underline">U</button>
-          <button class="tb-btn" onclick="execFmt('strikeThrough')" title="Strikethrough" style="text-decoration:line-through">S</button>
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <div class="color-picker-wrap" title="Text color">
-            <div class="color-swatch" id="text-color-swatch"></div>
-            <input type="color" id="text-color" value="#1a1917" oninput="setTextColor(this.value)">
-          </div>
-          <div class="color-picker-wrap" title="Highlight color" style="margin-left:4px">
-            <div class="color-swatch" id="highlight-swatch" style="background:#fff9c4"></div>
-            <input type="color" id="highlight-color" value="#fff9c4" oninput="setHighlight(this.value)">
-          </div>
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <select class="tb-select" id="heading-select" onchange="applyHeading(this.value)" style="width:90px">
-            <option value="p">Paragraph</option>
-            <option value="h1">Heading 1</option>
-            <option value="h2">Heading 2</option>
-            <option value="h3">Heading 3</option>
-            <option value="blockquote">Quote</option>
-          </select>
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <button class="tb-btn" onclick="execFmt('justifyLeft')" title="Align left">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="10" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg>
-          </button>
-          <button class="tb-btn" onclick="execFmt('justifyCenter')" title="Center">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4"/><line x1="4" y1="8" x2="12" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg>
-          </button>
-          <button class="tb-btn" onclick="execFmt('justifyRight')" title="Align right">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4"/><line x1="6" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg>
-          </button>
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <button class="tb-btn" onclick="execFmt('insertUnorderedList')" title="Bullet list">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="3" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="3" cy="9" r="1" fill="currentColor" stroke="none"/><circle cx="3" cy="13" r="1" fill="currentColor" stroke="none"/><line x1="6" y1="5" x2="14" y2="5"/><line x1="6" y1="9" x2="14" y2="9"/><line x1="6" y1="13" x2="14" y2="13"/></svg>
-          </button>
-          <button class="tb-btn" onclick="execFmt('insertOrderedList')" title="Numbered list">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><text x="1.5" y="6" fill="currentColor" stroke="none" font-size="5" font-family="sans-serif">1.</text><text x="1.5" y="10" fill="currentColor" stroke="none" font-size="5" font-family="sans-serif">2.</text><text x="1.5" y="14" fill="currentColor" stroke="none" font-size="5" font-family="sans-serif">3.</text><line x1="7" y1="5" x2="14" y2="5"/><line x1="7" y1="9" x2="14" y2="9"/><line x1="7" y1="13" x2="14" y2="13"/></svg>
-          </button>
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <button class="tb-btn" onclick="document.execCommand('undo')" title="Undo (Ctrl+Z)">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8a5 5 0 1 1 1.4 3.5"/><polyline points="1,5 3,8 6,6"/></svg>
-          </button>
-          <button class="tb-btn" onclick="document.execCommand('redo')" title="Redo (Ctrl+Y)">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8a5 5 0 1 0-1.4 3.5"/><polyline points="15,5 13,8 10,6"/></svg>
-          </button>
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <button class="tb-btn" onclick="toggleFind()" title="Find & Replace (Ctrl+F)">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4"/><line x1="9.5" y1="9.5" x2="14" y2="14"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Find bar -->
-      <div id="find-bar">
-        <input type="text" id="find-input" placeholder="Find…" oninput="doFind()">
-        <input type="text" id="replace-input" placeholder="Replace with…">
-        <div id="find-count"></div>
-        <div class="find-actions">
-          <button onclick="doReplace()">Replace</button>
-          <button onclick="doReplaceAll()">All</button>
-          <button onclick="toggleFind()">✕</button>
-        </div>
-      </div>
-
-      <!-- Editor scroll -->
-      <div id="editor-scroll">
-        <div id="chapter-header">
-          <input type="text" id="chapter-title-input" placeholder="Chapter title…" oninput="onChapterTitleChange()">
-          <div class="chapter-divider"></div>
-        </div>
-        <div id="editor" contenteditable="true" data-placeholder="Begin writing…" spellcheck="true"
-          oninput="onEditorInput()" onkeydown="onEditorKeyDown(event)" onmouseup="updateToolbarState()" onkeyup="updateToolbarState()"></div>
-      </div>
-
-      <!-- Statusbar -->
-      <div id="statusbar">
-        <div class="sb-item">Words: <span id="sb-words">0</span></div>
-        <div class="sb-item">Chars: <span id="sb-chars">0</span></div>
-        <div class="sb-item">Lines: <span id="sb-lines">1</span></div>
-        <div class="sb-item" id="sb-saved" style="margin-left:auto; color: #aaa9a5">Auto-saved</div>
-      </div>
-    </div>
-
-  </div>
+<!-- IMAGE TOOLBAR -->
+<div id="img-toolbar">
+  <button class="tb-btn" onclick="setImgAlign('left')" title="Float left">◧</button>
+  <button class="tb-btn" onclick="setImgAlign('center')" title="Center">◈</button>
+  <button class="tb-btn" onclick="setImgAlign('right')" title="Float right">◨</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="resizeImg('-')" title="Smaller">−</button>
+  <button class="tb-btn" onclick="resizeImg('+')" title="Larger">+</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn btn-danger" onclick="removeImg()" title="Remove">✕</button>
 </div>
 
-<!-- Modals -->
-<div id="modal-new-project" class="modal-overlay" style="display:none" onclick="closeModalOnOverlay(event,'modal-new-project')">
+<!-- CONTEXT MENU -->
+<div id="ctx-menu" class="ctx-menu">
+  <div class="ctx-item" onclick="ctxAction('bold')"><strong>B</strong> Bold</div>
+  <div class="ctx-item" onclick="ctxAction('italic')"><em>I</em> Italic</div>
+  <div class="ctx-item" onclick="ctxAction('underline')"><u>U</u> Underline</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('copy')">⎘ Copy</div>
+  <div class="ctx-item" onclick="ctxAction('paste')">⎗ Paste</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('dropcap')">❦ Drop Cap</div>
+  <div class="ctx-item" onclick="ctxAction('tabindent')">⇥ Tab Indent</div>
+  <div class="ctx-item" onclick="ctxAction('removeformat')">✕ Clear Formatting</div>
+</div>
+
+<!-- SEARCH BAR -->
+<div id="search-bar">
+  <input id="search-find" placeholder="Find…" oninput="doSearch()">
+  <input id="search-replace" placeholder="Replace…">
+  <button class="btn btn-sm" onclick="doReplace()">Replace</button>
+  <button class="btn btn-sm" onclick="doReplaceAll()">All</button>
+  <span class="search-count" id="search-count"></span>
+  <label style="font-size:0.75rem;color:var(--text3);display:flex;align-items:center;gap:4px;cursor:pointer;">
+    <input type="checkbox" id="search-all-chapters"> All chapters
+  </label>
+  <button class="btn btn-sm btn-ghost" onclick="closeSearch()">✕</button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     LANDING PAGE
+════════════════════════════════════════════ -->
+<div id="landing">
+  <header class="landing-header">
+    <div>
+      <div class="landing-logo">Wordsmith<span>your stories, your space</span></div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" onclick="triggerImport()" title="Import project">⬆ Import</button>
+      <button class="btn" onclick="backupAll()">⬇ Backup All</button>
+      <label class="btn" title="Restore backup" style="cursor:pointer;">⎗ Restore <input id="backup-import-input" type="file" accept=".json,.zip" onchange="restoreBackup(event)"></label>
+      <button class="btn btn-icon" onclick="toggleTheme()" title="Toggle theme" id="theme-btn">☾</button>
+    </div>
+  </header>
+  <div class="landing-content">
+    <div class="landing-toolbar">
+      <div class="landing-title-row">
+        <h1>Your Projects</h1>
+        <span class="project-count" id="project-count">0 projects</span>
+      </div>
+      <div class="landing-actions">
+        <button class="btn btn-primary" onclick="newProject()">+ New Project</button>
+      </div>
+    </div>
+    <div class="projects-grid" id="projects-grid">
+      <div class="empty-state">
+        <div class="empty-icon">✍</div>
+        <p>No projects yet. Start your first story.</p>
+      </div>
+    </div>
+  </div>
+  <input id="import-input" type="file" accept=".json" onchange="importProject(event)">
+</div>
+
+<!-- ════════════════════════════════════════════
+     EDITOR VIEW
+════════════════════════════════════════════ -->
+<div id="editor-view">
+
+  <!-- TOP BAR -->
+  <div class="editor-topbar" id="editor-topbar">
+    <div class="topbar-left">
+      <button class="btn btn-sm btn-ghost" onclick="closeEditor()">← Back</button>
+      <div class="tb-sep"></div>
+      <span class="project-name-display" id="topbar-project-name"></span>
+    </div>
+
+    <div class="topbar-center" id="formatting-toolbar">
+      <!-- Paragraph style -->
+      <select class="tb-select" id="para-style" onchange="applyParaStyle(this.value)" title="Paragraph style">
+        <option value="p">Normal</option>
+        <option value="h1">Heading 1</option>
+        <option value="h2">Heading 2</option>
+        <option value="h3">Heading 3</option>
+        <option value="h4">Heading 4</option>
+        <option value="blockquote">Blockquote</option>
+        <option value="pre">Code</option>
+      </select>
+      <!-- Font family -->
+      <select class="tb-select" id="font-family" onchange="applyFont(this.value)" title="Font family" style="max-width:100px;">
+        <option value="'EB Garamond', serif">Garamond</option>
+        <option value="'Crimson Pro', serif">Crimson</option>
+        <option value="'Playfair Display', serif">Playfair</option>
+        <option value="'DM Sans', sans-serif">DM Sans</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+        <option value="'Courier New', monospace">Courier</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <!-- Font size -->
+      <select class="tb-select" id="font-size" onchange="applyFontSize(this.value)" title="Font size" style="width:58px;">
+        <option value="0.9rem">Small</option>
+        <option value="1.05rem" selected>Normal</option>
+        <option value="1.2rem">Large</option>
+        <option value="1.4rem">XLarge</option>
+      </select>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="fmt('bold')" title="Bold (Ctrl+B)"><strong>B</strong></button>
+      <button class="tb-btn" onclick="fmt('italic')" title="Italic (Ctrl+I)"><em>I</em></button>
+      <button class="tb-btn" onclick="fmt('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
+      <button class="tb-btn" onclick="fmt('strikeThrough')" title="Strikethrough"><s>S</s></button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="applyAlign('left')" title="Align left" id="align-left">⬤⬤⬤</button>
+      <button class="tb-btn" onclick="applyAlign('center')" title="Center" id="align-center">≡</button>
+      <button class="tb-btn" onclick="applyAlign('right')" title="Align right" id="align-right">⬤</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="fmt('insertUnorderedList')" title="Bullet list">•≡</button>
+      <button class="tb-btn" onclick="fmt('insertOrderedList')" title="Numbered list">1≡</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="toggleDropCap()" title="Drop cap">❦</button>
+      <button class="tb-btn" onclick="toggleTabIndent()" title="Tab indent">⇥</button>
+      <button class="tb-btn" onclick="fmt('removeFormat')" title="Remove formatting">Tₓ</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="insertImage()" title="Insert image">🖼</button>
+      <input id="image-upload-input" type="file" accept="image/*" onchange="handleImageUpload(event)">
+    </div>
+
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="toggleFocus()" title="Focus mode" id="focus-btn">⛶</button>
+      <button class="tb-btn" onclick="toggleRevisions()" title="Revisions">⏱</button>
+      <button class="tb-btn" onclick="toggleSearch()" title="Search (Ctrl+F)">🔍</button>
+      <button class="tb-btn" onclick="toggleSpell()" id="spell-btn" title="Spellcheck">ABC</button>
+      <div class="dropdown-wrap">
+        <button class="btn btn-sm" onclick="toggleExportMenu()">Export ▾</button>
+        <div class="dropdown-menu" id="export-menu">
+          <div class="drop-item" onclick="exportAs('txt')">📄 Plain Text</div>
+          <div class="drop-item" onclick="exportAs('md')">📝 Markdown</div>
+          <div class="drop-item" onclick="exportAs('html')">🌐 HTML</div>
+          <div class="drop-item" onclick="exportAs('docx')">📃 Word (.docx)</div>
+          <div class="drop-item" onclick="exportAs('json')">💾 Project File</div>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="manualSave()" title="Ctrl+S">Save</button>
+      <button class="btn btn-icon btn-ghost" onclick="toggleTheme()" title="Toggle theme" id="theme-btn2">☾</button>
+    </div>
+  </div>
+
+  <!-- BODY: SIDEBAR + WRITING + REVISIONS -->
+  <div class="editor-body" id="editor-body">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-project" id="sidebar-project-name"></div>
+        <div class="sidebar-stats" id="sidebar-stats">Loading…</div>
+      </div>
+      <div class="sidebar-chapters-header">
+        Chapters
+        <button class="btn btn-sm btn-ghost" style="padding:2px 6px;font-size:0.75rem;" onclick="addChapter()" title="Ctrl+Shift+N">+</button>
+      </div>
+      <div class="chapters-list" id="chapters-list"></div>
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost" style="width:100%;font-size:0.78rem;" onclick="toggleSidebar()">← Collapse</button>
+      </div>
+    </div>
+
+    <!-- MAIN WRITING -->
+    <div class="writing-area" id="writing-area" ondragover="onDragOver(event)" ondrop="onDrop(event)">
+      <div class="page-canvas" id="page-canvas">
+        <input class="chapter-title-input" id="chapter-title-input" placeholder="Chapter Title…" oninput="onChapterTitleInput()" value="">
+        <hr class="chapter-divider">
+        <div
+          id="editor"
+          contenteditable="true"
+          spellcheck="true"
+          data-placeholder="Begin writing…"
+          oninput="onEditorInput()"
+          onkeydown="onEditorKeydown(event)"
+          onmouseup="onEditorMouseup()"
+          oncontextmenu="onContextMenu(event)"
+          onpaste="onEditorPaste(event)"
+          ondragover="onDragOver(event)"
+          ondrop="onDrop(event)"
+        ></div>
+        <div class="chapter-nav" id="chapter-nav">
+          <div id="prev-chapter-btn"></div>
+          <div id="next-chapter-btn"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVISIONS PANEL -->
+    <div id="revision-panel">
+      <div class="rev-header">
+        Revisions
+        <button class="btn btn-icon btn-ghost btn-sm" onclick="toggleRevisions()">✕</button>
+      </div>
+      <div class="rev-list" id="rev-list"></div>
+    </div>
+
+  </div><!-- /editor-body -->
+
+  <!-- STATUS BAR -->
+  <div class="status-bar" id="status-bar">
+    <span class="status-item" id="status-chapter-words"></span>
+    <span class="status-sep"></span>
+    <span class="status-item" id="status-project-words"></span>
+    <span class="status-sep"></span>
+    <span class="status-item" id="status-read-time"></span>
+    <span class="status-sep"></span>
+    <span class="status-item" id="status-font"></span>
+    <span class="status-sep"></span>
+    <div class="goal-bar-wrap" id="status-goal-wrap" style="display:none">
+      <span style="font-size:0.72rem;color:var(--text3)">Goal:</span>
+      <div class="goal-bar"><div class="goal-bar-fill" id="goal-bar-fill"></div></div>
+      <span id="status-goal-text" style="font-size:0.72rem;"></span>
+    </div>
+    <button class="btn btn-sm btn-ghost" style="margin-left:auto;" onclick="openGoalModal()">🎯 Goal</button>
+    <button class="btn btn-sm btn-ghost" onclick="toggleSidebar()" id="toggle-sidebar-btn">☰</button>
+    <span class="status-item" id="status-autosave"></span>
+  </div>
+
+</div><!-- /editor-view -->
+
+<!-- ════════════════════════════════════════
+     MODALS
+════════════════════════════════════════ -->
+
+<!-- New/Rename Project Modal -->
+<div class="modal-overlay" id="project-modal">
   <div class="modal">
-    <h2>New Project</h2>
-    <label>Project Name</label>
-    <input type="text" id="new-proj-name" placeholder="My Novel" onkeydown="if(event.key==='Enter')createProject()">
-    <label>First Chapter Name</label>
-    <input type="text" id="new-ch-name" placeholder="Chapter 1" onkeydown="if(event.key==='Enter')createProject()">
+    <h2 id="project-modal-title">New Project</h2>
+    <div class="modal-field">
+      <label>Project Title</label>
+      <input class="modal-input" id="project-title-input" placeholder="e.g. The Forgotten City" onkeydown="if(event.key==='Enter') confirmProject()">
+    </div>
     <div class="modal-actions">
-      <button onclick="closeModal('modal-new-project')">Cancel</button>
-      <button class="primary" onclick="createProject()">Create</button>
+      <button class="btn" onclick="closeModal('project-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmProject()">Create</button>
     </div>
   </div>
 </div>
 
-<div id="modal-open-project" class="modal-overlay" style="display:none" onclick="closeModalOnOverlay(event,'modal-open-project')">
+<!-- Goal Modal -->
+<div class="modal-overlay" id="goal-modal">
   <div class="modal">
-    <h2>Open Project</h2>
-    <div class="project-list" id="open-proj-list"></div>
-    <label style="margin-top:8px">Or import from file</label>
-    <input type="file" id="import-file" accept=".wordsmith,.json" style="font-size:13px; margin-bottom:16px" onchange="importProject(event)">
+    <h2>Word Count Goal</h2>
+    <div class="modal-field">
+      <label>Daily word goal (0 to disable)</label>
+      <input class="modal-input" id="goal-input" type="number" min="0" placeholder="1000">
+    </div>
+    <div class="modal-field">
+      <label>Reset goal each day at midnight</label>
+      <select class="modal-input" id="goal-reset">
+        <option value="1">Yes</option>
+        <option value="0">No (total project words)</option>
+      </select>
+    </div>
     <div class="modal-actions">
-      <button onclick="closeModal('modal-open-project')">Cancel</button>
-      <button class="primary" onclick="openSelectedProject()">Open</button>
+      <button class="btn" onclick="closeModal('goal-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGoal()">Save</button>
     </div>
   </div>
 </div>
 
-<div id="modal-add-chapter" class="modal-overlay" style="display:none" onclick="closeModalOnOverlay(event,'modal-add-chapter')">
+<!-- Font Upload Modal -->
+<div class="modal-overlay" id="font-modal">
   <div class="modal">
-    <h2>Add Chapter</h2>
-    <label>Chapter Name</label>
-    <input type="text" id="new-ch-name2" placeholder="Chapter 2" onkeydown="if(event.key==='Enter')confirmAddChapter()">
+    <h2>Upload Custom Font</h2>
+    <div class="modal-field">
+      <label>Font name (e.g. "My Font")</label>
+      <input class="modal-input" id="custom-font-name" placeholder="MyFont">
+    </div>
+    <div class="modal-field">
+      <label>Font file (TTF / OTF)</label>
+      <input id="font-upload-input" type="file" accept=".ttf,.otf,.woff,.woff2">
+      <button class="btn btn-sm" style="margin-top:6px;" onclick="document.getElementById('font-upload-input').click()">Choose file…</button>
+      <span id="font-file-name" style="font-size:0.78rem;color:var(--text3);margin-left:6px;"></span>
+    </div>
     <div class="modal-actions">
-      <button onclick="closeModal('modal-add-chapter')">Cancel</button>
-      <button class="primary" onclick="confirmAddChapter()">Add</button>
+      <button class="btn" onclick="closeModal('font-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmFontUpload()">Apply Font</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <h2 id="confirm-title">Are you sure?</h2>
+    <p id="confirm-msg" style="color:var(--text2);font-size:0.9rem;margin-bottom:20px;"></p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-primary btn-danger" id="confirm-ok-btn">Delete</button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════
-// State
-// ═══════════════════════════════════════
+'use strict';
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let DB;
+const DB_NAME = 'wordsmith_v1';
 let state = {
-  projects: {},      // { id: { name, chapters: [{id,title,content}], created } }
-  currentProject: null,
-  currentChapter: null,
-  selectedOpenId: null,
+  projects: [], // [{id, title, coverA, coverB, createdAt, chapters: [{id, title, content}]}]
+  currentProjectId: null,
+  currentChapterId: null,
+  theme: 'light',
+  focusMode: false,
+  sidebarOpen: true,
+  spellcheck: true,
+  goal: { target: 0, dailyReset: true, date: today(), wordsAtStart: 0 },
+  customFonts: [],
 };
+let autoSaveTimer = null;
+let revisions = []; // per chapter
+let searchMatches = [];
+let selectedImg = null;
+const COLORS = [
+  ['#8b4513','#c4956a'],['#1a4b6e','#4a86b0'],['#2d5a27','#6b9e65'],
+  ['#4a2060','#8b60a0'],['#5a3010','#9e7050'],['#1e4040','#508080'],
+  ['#5a1a1a','#a05050'],['#1a3a5a','#5080a0'],['#3a3a1a','#808050'],
+  ['#1a1a4a','#5050a0'],
+];
 
-const STORAGE_KEY = 'wordsmith_v1';
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state.projects = JSON.parse(raw);
-  } catch(e) {}
+// ════════════════════════════════════════
+// DB
+// ════════════════════════════════════════
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, 2);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('state')) db.createObjectStore('state');
+    };
+    req.onsuccess = e => { DB = e.target.result; res(DB); };
+    req.onerror = () => rej(req.error);
+  });
+}
+async function dbGet(key) {
+  return new Promise((res, rej) => {
+    const tx = DB.transaction('state', 'readonly');
+    const req = tx.objectStore('state').get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+async function dbSet(key, val) {
+  return new Promise((res, rej) => {
+    const tx = DB.transaction('state', 'readwrite');
+    const req = tx.objectStore('state').put(val, key);
+    req.onsuccess = () => res();
+    req.onerror = () => rej(req.error);
+  });
 }
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.projects));
-}
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  await openDB();
+  const saved = await dbGet('state');
+  if (saved) { Object.assign(state, saved); }
+  // Ensure theme
+  if (state.theme === 'dark') document.documentElement.setAttribute('data-theme','dark');
+  updateThemeBtn();
+  renderProjects();
+  document.getElementById('app-loading').style.display = 'none';
+  // Keyboard shortcuts
+  document.addEventListener('keydown', globalKeydown);
+  document.addEventListener('click', closeDropdowns);
+  document.addEventListener('selectionchange', onSelectionChange);
+  // Goal date reset
+  if (state.goal.dailyReset && state.goal.date !== today()) {
+    state.goal.date = today();
+    state.goal.wordsAtStart = countWords(getCurrentEditorText());
+  }
+});
 
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
-
-// ═══════════════════════════════════════
-// Project ops
-// ═══════════════════════════════════════
-function showNewProject() {
-  document.getElementById('new-proj-name').value = '';
-  document.getElementById('new-ch-name').value = 'Chapter 1';
-  openModal('modal-new-project');
-  setTimeout(() => document.getElementById('new-proj-name').focus(), 50);
-}
-
-function createProject() {
-  const name = document.getElementById('new-proj-name').value.trim() || 'Untitled Project';
-  const chName = document.getElementById('new-ch-name').value.trim() || 'Chapter 1';
-  closeModal('modal-new-project');
-  const id = uid();
-  const chId = uid();
-  state.projects[id] = {
-    name,
-    created: Date.now(),
-    chapters: [{ id: chId, title: chName, content: '' }]
-  };
+// ════════════════════════════════════════
+// THEME
+// ════════════════════════════════════════
+function toggleTheme() {
+  state.theme = state.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', state.theme);
+  updateThemeBtn();
   saveState();
-  openProject(id);
+}
+function updateThemeBtn() {
+  const icon = state.theme === 'dark' ? '☀' : '☾';
+  const b1 = document.getElementById('theme-btn');
+  const b2 = document.getElementById('theme-btn2');
+  if (b1) b1.textContent = icon;
+  if (b2) b2.textContent = icon;
 }
 
-function showOpenProject() {
-  renderProjectList();
-  state.selectedOpenId = null;
-  openModal('modal-open-project');
-}
-
-function renderProjectList() {
-  const list = document.getElementById('open-proj-list');
-  const ids = Object.keys(state.projects);
-  if (!ids.length) {
-    list.innerHTML = '<div class="empty-msg">No projects yet. Create one first.</div>';
+// ════════════════════════════════════════
+// PROJECTS
+// ════════════════════════════════════════
+function renderProjects() {
+  const grid = document.getElementById('projects-grid');
+  const count = document.getElementById('project-count');
+  count.textContent = `${state.projects.length} project${state.projects.length !== 1 ? 's' : ''}`;
+  if (!state.projects.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">✍</div><p>No projects yet. Start your first story.</p></div>';
     return;
   }
-  list.innerHTML = ids.map(id => {
-    const p = state.projects[id];
-    const chCount = p.chapters.length;
-    const words = p.chapters.reduce((s, ch) => s + countWords(ch.content), 0);
-    return `<div class="project-list-item" onclick="selectOpenProject('${id}',this)">
-      <span class="proj-name">${esc(p.name)}</span>
-      <span class="proj-meta">${chCount} ch · ${words} w</span>
+  grid.innerHTML = state.projects.map(p => {
+    const ci = (COLORS.findIndex((c,i) => p.coverA === c[0]) + 7) % COLORS.length;
+    const totalWords = (p.chapters || []).reduce((a, c) => a + countWords(c.content || ''), 0);
+    const chapters = (p.chapters || []).length;
+    return `
+    <div class="project-card" onclick="openProject('${p.id}')">
+      <div class="card-cover" style="--cover-a:${p.coverA};--cover-b:${p.coverB}">
+        <div class="card-cover-title">${escHtml(p.title)}</div>
+        <div class="card-actions">
+          <button class="card-action-btn" onclick="event.stopPropagation();renameProject('${p.id}')" title="Rename">✏</button>
+          <button class="card-action-btn del" onclick="event.stopPropagation();deleteProject('${p.id}')" title="Delete">✕</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${escHtml(p.title)}</div>
+        <div class="card-meta">
+          <span>${chapters} chapter${chapters !== 1 ? 's' : ''}</span>
+          <span>${totalWords.toLocaleString()} words</span>
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
 
-function selectOpenProject(id, el) {
-  state.selectedOpenId = id;
-  document.querySelectorAll('.project-list-item').forEach(e => e.classList.remove('selected'));
-  el.classList.add('selected');
+function newProject() {
+  document.getElementById('project-modal-title').textContent = 'New Project';
+  document.getElementById('project-title-input').value = '';
+  document.getElementById('confirm-ok-btn').textContent = 'Delete';
+  openModal('project-modal');
+  setTimeout(() => document.getElementById('project-title-input').focus(), 100);
+  window._projectModalMode = 'new';
 }
-
-function openSelectedProject() {
-  if (!state.selectedOpenId) return;
-  closeModal('modal-open-project');
-  openProject(state.selectedOpenId);
+function renameProject(id) {
+  const p = getProject(id);
+  if (!p) return;
+  document.getElementById('project-modal-title').textContent = 'Rename Project';
+  document.getElementById('project-title-input').value = p.title;
+  openModal('project-modal');
+  setTimeout(() => document.getElementById('project-title-input').focus(), 100);
+  window._projectModalMode = 'rename';
+  window._projectModalId = id;
+}
+function confirmProject() {
+  const title = document.getElementById('project-title-input').value.trim();
+  if (!title) { flash('Enter a title'); return; }
+  if (window._projectModalMode === 'new') {
+    const ci = Math.floor(Math.random() * COLORS.length);
+    const p = {
+      id: uid(), title, coverA: COLORS[ci][0], coverB: COLORS[ci][1],
+      createdAt: Date.now(),
+      chapters: [{ id: uid(), title: 'Chapter 1', content: '' }]
+    };
+    state.projects.unshift(p);
+    flash('Project created');
+  } else {
+    const p = getProject(window._projectModalId);
+    if (p) p.title = title;
+    flash('Project renamed');
+  }
+  closeModal('project-modal');
+  renderProjects();
+  saveState();
+}
+function deleteProject(id) {
+  const p = getProject(id);
+  if (!p) return;
+  showConfirm(`Delete "${p.title}"?`, 'This cannot be undone.', () => {
+    state.projects = state.projects.filter(x => x.id !== id);
+    renderProjects();
+    saveState();
+    flash('Project deleted');
+  });
 }
 
 function openProject(id) {
-  state.currentProject = id;
-  const proj = state.projects[id];
-  document.getElementById('project-title-display').textContent = proj.name;
-  document.getElementById('no-project').style.display = 'none';
-  const wrap = document.getElementById('editor-wrapper');
-  wrap.style.display = 'flex';
-  document.getElementById('add-ch-btn').style.display = '';
-  document.getElementById('sidebar-stats').style.display = '';
+  const p = getProject(id);
+  if (!p) return;
+  state.currentProjectId = id;
+  if (!p.chapters || !p.chapters.length) p.chapters = [{ id: uid(), title: 'Chapter 1', content: '' }];
+  state.currentChapterId = p.chapters[0].id;
+  showEditorView();
+}
+function closeEditor() {
+  saveCurrentChapter();
+  saveState();
+  state.currentProjectId = null;
+  state.currentChapterId = null;
+  showLandingView();
+  renderProjects();
+}
+
+function showEditorView() {
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('editor-view').classList.add('active');
+  loadEditorForCurrentChapter();
+}
+function showLandingView() {
+  document.getElementById('landing').classList.remove('hidden');
+  document.getElementById('editor-view').classList.remove('active');
+  if (state.focusMode) { state.focusMode = false; document.getElementById('editor-view').classList.remove('focus-mode'); }
+}
+
+function loadEditorForCurrentChapter() {
+  const p = getCurrentProject();
+  const ch = getCurrentChapter();
+  if (!p || !ch) return;
+
+  document.getElementById('topbar-project-name').textContent = p.title;
+  document.getElementById('sidebar-project-name').textContent = p.title;
+  document.getElementById('chapter-title-input').value = ch.title || '';
+  document.getElementById('editor').innerHTML = ch.content || '';
+
   renderChapterList();
-  // Open first chapter
-  if (proj.chapters.length > 0) {
-    openChapter(proj.chapters[0].id);
+  updateStatusBar();
+  updateChapterNav();
+  loadRevisions();
+  if (state.sidebarOpen) document.getElementById('sidebar').classList.remove('collapsed');
+  else document.getElementById('sidebar').classList.add('collapsed');
+}
+
+// ════════════════════════════════════════
+// CHAPTERS
+// ════════════════════════════════════════
+function renderChapterList() {
+  const p = getCurrentProject();
+  const list = document.getElementById('chapters-list');
+  if (!p) return;
+  list.innerHTML = p.chapters.map((ch, i) => `
+    <div class="chapter-item ${ch.id === state.currentChapterId ? 'active' : ''}"
+      data-id="${ch.id}" draggable="true"
+      ondragstart="onChapterDragStart(event,'${ch.id}')"
+      ondragover="onChapterDragOver(event)"
+      ondrop="onChapterDrop(event,'${ch.id}')"
+      onclick="switchChapter('${ch.id}')">
+      <span class="chapter-drag">⠿</span>
+      <span class="chapter-number">${i+1}.</span>
+      <div class="chapter-name-wrap">
+        <div class="chapter-name">${escHtml(ch.title || `Chapter ${i+1}`)}</div>
+        <div class="chapter-wordcount">${countWords(ch.content||'')} words · ${readingTime(countWords(ch.content||''))}</div>
+      </div>
+      <div class="chapter-actions">
+        <button class="chapter-act-btn" onclick="event.stopPropagation();renameChapter('${ch.id}')" title="Rename">✏</button>
+        <button class="chapter-act-btn del" onclick="event.stopPropagation();deleteChapter('${ch.id}')" title="Delete">✕</button>
+      </div>
+    </div>`).join('');
+  updateSidebarStats();
+}
+
+function switchChapter(id) {
+  if (id === state.currentChapterId) return;
+  saveCurrentChapter();
+  state.currentChapterId = id;
+  loadEditorForCurrentChapter();
+}
+function addChapter() {
+  const p = getCurrentProject();
+  if (!p) return;
+  const ch = { id: uid(), title: `Chapter ${p.chapters.length + 1}`, content: '' };
+  p.chapters.push(ch);
+  saveCurrentChapter();
+  state.currentChapterId = ch.id;
+  loadEditorForCurrentChapter();
+  saveState();
+  flash('Chapter added');
+}
+function deleteChapter(id) {
+  const p = getCurrentProject();
+  if (!p) return;
+  if (p.chapters.length <= 1) { flash('Cannot delete the only chapter'); return; }
+  const ch = p.chapters.find(c => c.id === id);
+  showConfirm(`Delete "${ch?.title || 'chapter'}"?`, 'All content will be lost.', () => {
+    p.chapters = p.chapters.filter(c => c.id !== id);
+    if (state.currentChapterId === id) state.currentChapterId = p.chapters[0].id;
+    loadEditorForCurrentChapter();
+    saveState();
+    flash('Chapter deleted');
+  });
+}
+function renameChapter(id) {
+  const p = getCurrentProject();
+  const ch = p?.chapters.find(c => c.id === id);
+  if (!ch) return;
+  const name = prompt('Chapter title:', ch.title);
+  if (name !== null && name.trim()) {
+    ch.title = name.trim();
+    if (id === state.currentChapterId) document.getElementById('chapter-title-input').value = ch.title;
+    renderChapterList();
+    saveState();
   }
 }
-
-function saveProject() {
-  if (!state.currentProject) return;
-  saveCurrentChapterContent();
-  saveState();
-  flashSaved('Saved');
-}
-
-function flashSaved(msg) {
-  const el = document.getElementById('sb-saved');
-  el.textContent = msg;
-  el.style.color = '#8ab18a';
-  setTimeout(() => { el.textContent = 'Auto-saved'; el.style.color = ''; }, 2000);
-}
-
-// ═══════════════════════════════════════
-// Chapter ops
-// ═══════════════════════════════════════
-function renderChapterList() {
-  const proj = state.projects[state.currentProject];
-  const list = document.getElementById('chapter-list');
-  list.innerHTML = '';
-  proj.chapters.forEach((ch, i) => {
-    const words = countWords(ch.content);
-    const item = document.createElement('div');
-    item.className = 'chapter-item' + (ch.id === state.currentChapter ? ' active' : '');
-    item.draggable = true;
-    item.dataset.id = ch.id;
-    item.innerHTML = `
-      <svg class="ch-icon" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3">
-        <rect x="2" y="1" width="10" height="12" rx="1.5"/>
-        <line x1="4.5" y1="4.5" x2="9.5" y2="4.5"/>
-        <line x1="4.5" y1="7" x2="9.5" y2="7"/>
-        <line x1="4.5" y1="9.5" x2="7.5" y2="9.5"/>
-      </svg>
-      <span class="ch-name" title="${esc(ch.title)}">${esc(ch.title)}</span>
-      <span class="ch-word-count">${words}</span>
-      <button class="ch-del" title="Delete chapter" onclick="deleteChapter('${ch.id}',event)">✕</button>`;
-    item.addEventListener('click', () => openChapter(ch.id));
-    // Drag
-    item.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', ch.id); item.style.opacity = '0.5'; });
-    item.addEventListener('dragend', () => { item.style.opacity = ''; document.querySelectorAll('.chapter-item').forEach(x=>x.classList.remove('drag-over')); });
-    item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
-    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
-    item.addEventListener('drop', e => {
-      e.preventDefault();
-      const fromId = e.dataTransfer.getData('text/plain');
-      const toId = ch.id;
-      if (fromId !== toId) reorderChapter(fromId, toId);
-    });
-    list.appendChild(item);
-  });
-  updateTotalStats();
-}
-
-function reorderChapter(fromId, toId) {
-  const proj = state.projects[state.currentProject];
-  const fromIdx = proj.chapters.findIndex(c => c.id === fromId);
-  const toIdx = proj.chapters.findIndex(c => c.id === toId);
-  if (fromIdx < 0 || toIdx < 0) return;
-  const [moved] = proj.chapters.splice(fromIdx, 1);
-  proj.chapters.splice(toIdx, 0, moved);
-  saveState();
-  renderChapterList();
-}
-
-function openChapter(id) {
-  saveCurrentChapterContent();
-  state.currentChapter = id;
-  const proj = state.projects[state.currentProject];
-  const ch = proj.chapters.find(c => c.id === id);
-  if (!ch) return;
-  document.getElementById('chapter-title-input').value = ch.title;
-  document.getElementById('editor').innerHTML = ch.content;
-  document.getElementById('editor').focus();
-  renderChapterList();
-  updateStats();
-}
-
-function saveCurrentChapterContent() {
-  if (!state.currentProject || !state.currentChapter) return;
-  const proj = state.projects[state.currentProject];
-  const ch = proj.chapters.find(c => c.id === state.currentChapter);
-  if (!ch) return;
-  ch.content = document.getElementById('editor').innerHTML;
-}
-
-function onChapterTitleChange() {
-  if (!state.currentProject || !state.currentChapter) return;
-  const proj = state.projects[state.currentProject];
-  const ch = proj.chapters.find(c => c.id === state.currentChapter);
+function onChapterTitleInput() {
+  const ch = getCurrentChapter();
   if (!ch) return;
   ch.title = document.getElementById('chapter-title-input').value;
   renderChapterList();
+  scheduleAutoSave();
+}
+function updateChapterNav() {
+  const p = getCurrentProject();
+  if (!p) return;
+  const idx = p.chapters.findIndex(c => c.id === state.currentChapterId);
+  const prev = document.getElementById('prev-chapter-btn');
+  const next = document.getElementById('next-chapter-btn');
+  prev.innerHTML = idx > 0 ? `<button class="btn" onclick="switchChapter('${p.chapters[idx-1].id}')">← ${escHtml(p.chapters[idx-1].title)}</button>` : '';
+  next.innerHTML = idx < p.chapters.length - 1 ? `<button class="btn" onclick="switchChapter('${p.chapters[idx+1].id}')">→ ${escHtml(p.chapters[idx+1].title)}</button>` : '';
 }
 
-function addChapter() {
-  document.getElementById('new-ch-name2').value = 'Chapter ' + (state.projects[state.currentProject].chapters.length + 1);
-  openModal('modal-add-chapter');
-  setTimeout(() => document.getElementById('new-ch-name2').focus(), 50);
-}
-
-function confirmAddChapter() {
-  const name = document.getElementById('new-ch-name2').value.trim() || 'Untitled';
-  closeModal('modal-add-chapter');
-  const id = uid();
-  state.projects[state.currentProject].chapters.push({ id, title: name, content: '' });
-  saveState();
+// DRAG-DROP chapters
+let _dragChapterId = null;
+function onChapterDragStart(e, id) { _dragChapterId = id; e.dataTransfer.effectAllowed = 'move'; }
+function onChapterDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function onChapterDrop(e, targetId) {
+  e.preventDefault();
+  const p = getCurrentProject();
+  if (!p || !_dragChapterId || _dragChapterId === targetId) return;
+  const fromIdx = p.chapters.findIndex(c => c.id === _dragChapterId);
+  const toIdx = p.chapters.findIndex(c => c.id === targetId);
+  const [item] = p.chapters.splice(fromIdx, 1);
+  p.chapters.splice(toIdx, 0, item);
+  _dragChapterId = null;
   renderChapterList();
-  openChapter(id);
-}
-
-function deleteChapter(id, e) {
-  e.stopPropagation();
-  const proj = state.projects[state.currentProject];
-  if (proj.chapters.length <= 1) { alert('A project must have at least one chapter.'); return; }
-  if (!confirm('Delete this chapter? This cannot be undone.')) return;
-  const idx = proj.chapters.findIndex(c => c.id === id);
-  proj.chapters.splice(idx, 1);
+  updateChapterNav();
   saveState();
-  if (state.currentChapter === id) {
-    state.currentChapter = null;
-    const next = proj.chapters[Math.min(idx, proj.chapters.length - 1)];
-    openChapter(next.id);
-  } else {
-    renderChapterList();
-  }
 }
 
-// ═══════════════════════════════════════
-// Formatting
-// ═══════════════════════════════════════
-function execFmt(cmd, val) {
+// ════════════════════════════════════════
+// EDITOR
+// ════════════════════════════════════════
+function fmt(cmd, val) {
   document.getElementById('editor').focus();
   document.execCommand(cmd, false, val || null);
-  updateToolbarState();
+  onEditorInput();
 }
-
-function setFontSize(size) {
-  const s = Math.max(8, Math.min(72, parseInt(size) || 17));
-  document.getElementById('font-size-input').value = s;
+function applyParaStyle(tag) {
+  if (!tag) return;
   document.getElementById('editor').focus();
-  document.execCommand('fontSize', false, '7');
-  document.querySelectorAll('#editor font[size="7"]').forEach(el => {
-    el.removeAttribute('size');
-    el.style.fontSize = s + 'px';
-  });
+  document.execCommand('formatBlock', false, tag);
+  onEditorInput();
 }
-
-function setTextColor(val) {
-  document.getElementById('text-color-swatch').style.background = val;
-  document.getElementById('editor').focus();
-  document.execCommand('foreColor', false, val);
+function applyAlign(dir) {
+  const cmds = { left:'justifyLeft', center:'justifyCenter', right:'justifyRight' };
+  fmt(cmds[dir]);
 }
-
-function setHighlight(val) {
-  document.getElementById('highlight-swatch').style.background = val;
-  document.getElementById('editor').focus();
-  document.execCommand('hiliteColor', false, val);
-}
-
-function applyHeading(tag) {
-  document.getElementById('editor').focus();
-  if (tag === 'blockquote') {
-    document.execCommand('formatBlock', false, 'blockquote');
-  } else {
-    document.execCommand('formatBlock', false, tag);
+function applyFont(val) {
+  if (val === 'custom') {
+    openModal('font-modal');
+    document.getElementById('font-family').value = document.getElementById('editor').style.fontFamily || "'EB Garamond', serif";
+    return;
   }
+  document.getElementById('editor').style.fontFamily = val;
+  document.getElementById('status-font').textContent = '🔤 ' + val.split(',')[0].replace(/['"]/g,'');
+  onEditorInput();
 }
-
-function updateToolbarState() {
-  ['bold','italic','underline','strikeThrough'].forEach(cmd => {
-    const btns = document.querySelectorAll(`#toolbar .tb-btn`);
-    // Update based on queryCommandState
-  });
-  // Detect block type
-  const block = document.queryCommandValue('formatBlock').toLowerCase();
-  const hs = document.getElementById('heading-select');
-  if (block === 'blockquote') hs.value = 'blockquote';
-  else if (['h1','h2','h3'].includes(block)) hs.value = block;
-  else hs.value = 'p';
+function applyFontSize(val) {
+  document.getElementById('editor').style.fontSize = val;
+  onEditorInput();
 }
-
-// ═══════════════════════════════════════
-// Stats
-// ═══════════════════════════════════════
-function countWords(html) {
-  const text = html.replace(/<[^>]+>/g, ' ').trim();
-  if (!text) return 0;
-  return text.split(/\s+/).filter(Boolean).length;
+function toggleDropCap() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const node = sel.getRangeAt(0).commonAncestorContainer;
+  const p = node.nodeType === 3 ? node.parentElement : node;
+  const block = p.closest('p, h1, h2, h3, h4, h5, h6') || p;
+  block.classList.toggle('drop-cap');
+  onEditorInput();
 }
-
-let autoSaveTimer;
-function onEditorInput() {
-  updateStats();
-  clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(() => {
-    saveCurrentChapterContent();
-    saveState();
-    flashSaved('Auto-saved');
-  }, 1500);
-}
-
-function updateStats() {
-  const ed = document.getElementById('editor');
-  const text = ed.innerText || '';
-  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const chars = text.length;
-  const lines = text.split('\n').length;
-  document.getElementById('sb-words').textContent = words.toLocaleString();
-  document.getElementById('sb-chars').textContent = chars.toLocaleString();
-  document.getElementById('sb-lines').textContent = lines;
-  document.getElementById('stat-ch-words').textContent = words.toLocaleString();
-  updateTotalStats();
-}
-
-function updateTotalStats() {
-  if (!state.currentProject) return;
-  const proj = state.projects[state.currentProject];
-  const total = proj.chapters.reduce((s, ch) => {
-    const c = ch.id === state.currentChapter
-      ? document.getElementById('editor').innerHTML
-      : ch.content;
-    return s + countWords(c);
-  }, 0);
-  document.getElementById('stat-total-words').textContent = total.toLocaleString();
-}
-
-// ═══════════════════════════════════════
-// Find & Replace
-// ═══════════════════════════════════════
-let findVisible = false;
-function toggleFind() {
-  findVisible = !findVisible;
-  document.getElementById('find-bar').classList.toggle('visible', findVisible);
-  if (findVisible) document.getElementById('find-input').focus();
-}
-
-function doFind() {
-  const term = document.getElementById('find-input').value;
-  document.getElementById('find-count').textContent = '';
-  if (!term) return;
-  const ed = document.getElementById('editor');
-  const text = ed.innerText;
-  const regex = new RegExp(escRegex(term), 'gi');
-  const matches = [...text.matchAll(regex)];
-  document.getElementById('find-count').textContent = matches.length + ' match' + (matches.length !== 1 ? 'es' : '');
-}
-
-function doReplace() {
-  const find = document.getElementById('find-input').value;
-  const rep = document.getElementById('replace-input').value;
-  if (!find) return;
-  document.getElementById('editor').focus();
-  window.find(find);
-  document.execCommand('insertText', false, rep);
-  doFind();
-}
-
-function doReplaceAll() {
-  const find = document.getElementById('find-input').value;
-  const rep = document.getElementById('replace-input').value;
-  if (!find) return;
-  const ed = document.getElementById('editor');
-  ed.innerHTML = ed.innerHTML.replace(new RegExp(escRegex(find), 'gi'), rep);
-  doFind();
+function toggleTabIndent() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const node = sel.getRangeAt(0).commonAncestorContainer;
+  const p = node.nodeType === 3 ? node.parentElement : node;
+  const block = p.closest('p, h1, h2, h3, h4, h5, h6') || p;
+  block.classList.toggle('tab-indent');
   onEditorInput();
 }
 
-function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function onEditorKeydown(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    document.execCommand('insertText', false, '\u00a0\u00a0\u00a0\u00a0');
+  }
+}
 
-// ═══════════════════════════════════════
-// Import / Export
-// ═══════════════════════════════════════
-function importProject(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+function onEditorInput() {
+  const ch = getCurrentChapter();
+  if (ch) ch.content = document.getElementById('editor').innerHTML;
+  updateStatusBar();
+  scheduleAutoSave();
+}
+
+function onEditorMouseup() {
+  hideImgToolbar();
+  onSelectionChange();
+  // Check if image clicked
+  const sel = window.getSelection();
+  if (sel && sel.focusNode) {
+    const node = sel.focusNode.nodeType === 3 ? sel.focusNode.parentElement : sel.focusNode;
+    if (node && node.tagName === 'IMG') { selectImg(node); return; }
+  }
+}
+function onSelectionChange() {
+  // Update toolbar state
+  try {
+    ['bold','italic','underline'].forEach(cmd => {
+      const btn = document.querySelector(`.tb-btn[onclick="fmt('${cmd}')"]`);
+      if (btn) btn.classList.toggle('active', document.queryCommandState(cmd));
+    });
+  } catch(e) {}
+}
+
+function onEditorPaste(e) {
+  // Handle image paste
+  const items = e.clipboardData?.items || [];
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const file = item.getAsFile();
+      insertImageFile(file);
+      return;
+    }
+  }
+  // Plain text paste to preserve formatting
+  e.preventDefault();
+  const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+  document.execCommand('insertHTML', false, text);
+}
+
+// ════════════════════════════════════════
+// IMAGES
+// ════════════════════════════════════════
+function insertImage() { document.getElementById('image-upload-input').click(); }
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (file) insertImageFile(file);
+  e.target.value = '';
+}
+function insertImageFile(file) {
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = ev => {
+    const img = `<img src="${ev.target.result}" class="align-center" style="max-width:100%;">`;
+    document.getElementById('editor').focus();
+    document.execCommand('insertHTML', false, img);
+    onEditorInput();
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag-drop image
+function onDragOver(e) { e.preventDefault(); }
+function onDrop(e) {
+  e.preventDefault();
+  const files = e.dataTransfer.files;
+  for (const f of files) {
+    if (f.type.startsWith('image/')) { insertImageFile(f); break; }
+  }
+}
+
+let _selectedImg = null;
+function selectImg(img) {
+  if (_selectedImg) _selectedImg.classList.remove('img-selected');
+  _selectedImg = img;
+  img.classList.add('img-selected');
+  const tb = document.getElementById('img-toolbar');
+  const r = img.getBoundingClientRect();
+  tb.style.top = (r.bottom + 6) + 'px';
+  tb.style.left = r.left + 'px';
+  tb.classList.add('open');
+}
+function hideImgToolbar() {
+  document.getElementById('img-toolbar').classList.remove('open');
+  if (_selectedImg) { _selectedImg.classList.remove('img-selected'); _selectedImg = null; }
+}
+function setImgAlign(dir) {
+  if (!_selectedImg) return;
+  _selectedImg.className = _selectedImg.className.replace(/align-\w+/g, '') + ` align-${dir}`;
+  onEditorInput();
+}
+function resizeImg(dir) {
+  if (!_selectedImg) return;
+  const w = (_selectedImg.offsetWidth || 200) + (dir === '+' ? 40 : -40);
+  _selectedImg.style.width = Math.max(40, w) + 'px';
+  onEditorInput();
+}
+function removeImg() {
+  if (!_selectedImg) return;
+  _selectedImg.remove();
+  hideImgToolbar();
+  onEditorInput();
+}
+
+// ════════════════════════════════════════
+// CUSTOM FONT
+// ════════════════════════════════════════
+document.getElementById('font-upload-input').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) document.getElementById('font-file-name').textContent = f.name;
+});
+function confirmFontUpload() {
+  const name = document.getElementById('custom-font-name').value.trim();
+  const file = document.getElementById('font-upload-input').files[0];
+  if (!name || !file) { flash('Enter name and choose file'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const url = ev.target.result;
+    const style = document.createElement('style');
+    style.textContent = `@font-face { font-family: "${name}"; src: url("${url}"); }`;
+    document.head.appendChild(style);
+    const sel = document.getElementById('font-family');
+    const opt = document.createElement('option');
+    opt.value = `"${name}", serif`;
+    opt.textContent = name;
+    sel.insertBefore(opt, sel.lastElementChild);
+    sel.value = `"${name}", serif`;
+    applyFont(`"${name}", serif`);
+    closeModal('font-modal');
+    flash('Font applied!');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ════════════════════════════════════════
+// CONTEXT MENU
+// ════════════════════════════════════════
+function onContextMenu(e) {
+  e.preventDefault();
+  const menu = document.getElementById('ctx-menu');
+  menu.style.top = e.clientY + 'px';
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 160) + 'px';
+  menu.classList.add('open');
+}
+function ctxAction(cmd) {
+  document.getElementById('ctx-menu').classList.remove('open');
+  switch(cmd) {
+    case 'bold': fmt('bold'); break;
+    case 'italic': fmt('italic'); break;
+    case 'underline': fmt('underline'); break;
+    case 'copy': document.execCommand('copy'); break;
+    case 'paste': navigator.clipboard?.readText().then(t => document.execCommand('insertText',false,t)); break;
+    case 'dropcap': toggleDropCap(); break;
+    case 'tabindent': toggleTabIndent(); break;
+    case 'removeformat': fmt('removeFormat'); break;
+  }
+}
+
+// ════════════════════════════════════════
+// SEARCH & REPLACE
+// ════════════════════════════════════════
+function toggleSearch() {
+  const bar = document.getElementById('search-bar');
+  if (bar.classList.contains('open')) closeSearch();
+  else { bar.classList.add('open'); setTimeout(() => document.getElementById('search-find').focus(), 50); }
+}
+function closeSearch() { document.getElementById('search-bar').classList.remove('open'); clearHighlights(); }
+
+let _searchIdx = 0;
+function doSearch() {
+  clearHighlights();
+  const q = document.getElementById('search-find').value;
+  if (!q) { document.getElementById('search-count').textContent = ''; return; }
+  const editor = document.getElementById('editor');
+  const text = editor.innerHTML;
+  const re = new RegExp(escapeRe(q), 'gi');
+  const highlighted = text.replace(re, m => `<mark class="search-hl" style="background:rgba(200,150,0,0.35);border-radius:2px;">${m}</mark>`);
+  editor.innerHTML = highlighted;
+  const marks = editor.querySelectorAll('.search-hl');
+  document.getElementById('search-count').textContent = `${marks.length} found`;
+  if (marks.length) marks[0].scrollIntoView({ block: 'center' });
+  // save content after markup (hl marks stripped on save)
+  // Note: we don't save highlighted version
+}
+function clearHighlights() {
+  const editor = document.getElementById('editor');
+  const marks = editor.querySelectorAll('.search-hl');
+  marks.forEach(m => { const t = document.createTextNode(m.textContent); m.replaceWith(t); });
+}
+function doReplace() {
+  const q = document.getElementById('search-find').value;
+  const r = document.getElementById('search-replace').value;
+  if (!q) return;
+  const editor = document.getElementById('editor');
+  clearHighlights();
+  const re = new RegExp(escapeRe(q), 'i');
+  editor.innerHTML = editor.innerHTML.replace(re, r);
+  onEditorInput();
+  flash('Replaced once');
+}
+function doReplaceAll() {
+  const q = document.getElementById('search-find').value;
+  const r = document.getElementById('search-replace').value;
+  if (!q) return;
+  clearHighlights();
+  const allChaps = document.getElementById('search-all-chapters').checked;
+  const re = new RegExp(escapeRe(q), 'gi');
+  const p = getCurrentProject();
+  if (allChaps && p) {
+    let count = 0;
+    p.chapters.forEach(ch => { const prev = ch.content; ch.content = (ch.content||'').replace(re, () => { count++; return r; }); });
+    document.getElementById('editor').innerHTML = getCurrentChapter()?.content || '';
+    flash(`Replaced ${count} occurrences across all chapters`);
+  } else {
+    const editor = document.getElementById('editor');
+    let count = 0;
+    editor.innerHTML = editor.innerHTML.replace(re, () => { count++; return r; });
+    onEditorInput();
+    flash(`Replaced ${count} occurrences`);
+  }
+  saveState();
+}
+
+// ════════════════════════════════════════
+// REVISIONS
+// ════════════════════════════════════════
+const MAX_REVISIONS = 10;
+function loadRevisions() {
+  const p = getCurrentProject();
+  const key = `revs_${state.currentProjectId}_${state.currentChapterId}`;
+  revisions = JSON.parse(localStorage.getItem(key) || '[]');
+  renderRevisionList();
+}
+function saveRevision() {
+  const ch = getCurrentChapter();
+  if (!ch) return;
+  const key = `revs_${state.currentProjectId}_${state.currentChapterId}`;
+  const snap = { ts: Date.now(), content: ch.content, title: ch.title, words: countWords(ch.content||'') };
+  revisions.unshift(snap);
+  if (revisions.length > MAX_REVISIONS) revisions = revisions.slice(0, MAX_REVISIONS);
+  localStorage.setItem(key, JSON.stringify(revisions));
+  renderRevisionList();
+}
+function renderRevisionList() {
+  const list = document.getElementById('rev-list');
+  if (!revisions.length) { list.innerHTML = '<div style="padding:12px;font-size:0.8rem;color:var(--text3)">No saved revisions yet</div>'; return; }
+  list.innerHTML = revisions.map((r, i) => `
+    <div class="rev-item" onclick="restoreRevision(${i})">
+      <div class="rev-time">${timeAgo(r.ts)}</div>
+      <div class="rev-words">${r.words} words</div>
+    </div>`).join('');
+}
+function restoreRevision(i) {
+  const r = revisions[i];
+  if (!r) return;
+  showConfirm('Restore this revision?', `This will replace current content with the version from ${timeAgo(r.ts)}.`, () => {
+    const ch = getCurrentChapter();
+    if (ch) { ch.content = r.content; ch.title = r.title; }
+    document.getElementById('editor').innerHTML = r.content || '';
+    document.getElementById('chapter-title-input').value = r.title || '';
+    onEditorInput();
+    flash('Revision restored');
+  });
+}
+function toggleRevisions() {
+  const panel = document.getElementById('revision-panel');
+  panel.classList.toggle('open');
+}
+
+// ════════════════════════════════════════
+// AUTO SAVE
+// ════════════════════════════════════════
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => { saveCurrentChapter(); saveState(); markAutoSaved(); }, 5000);
+  document.getElementById('status-autosave').textContent = '● Unsaved';
+}
+function markAutoSaved() {
+  document.getElementById('status-autosave').textContent = '✓ Saved ' + timeStr();
+}
+function manualSave() {
+  saveCurrentChapter();
+  saveRevision();
+  saveState();
+  markAutoSaved();
+  flash('Saved!');
+}
+function saveCurrentChapter() {
+  const ch = getCurrentChapter();
+  if (!ch) return;
+  ch.content = document.getElementById('editor').innerHTML;
+  ch.title = document.getElementById('chapter-title-input').value;
+}
+async function saveState() {
+  await dbSet('state', state);
+}
+
+// ════════════════════════════════════════
+// WORD COUNT & STATUS
+// ════════════════════════════════════════
+function countWords(html) {
+  const d = document.createElement('div'); d.innerHTML = html || '';
+  const t = d.textContent.trim();
+  return t ? t.split(/\s+/).filter(Boolean).length : 0;
+}
+function getCurrentEditorText() { return document.getElementById('editor').innerHTML; }
+function readingTime(words) { const m = Math.ceil(words / 200); return `${m} min`; }
+function updateStatusBar() {
+  const ch = getCurrentChapter();
+  const p = getCurrentProject();
+  const chWords = countWords(document.getElementById('editor').innerHTML);
+  const totalWords = p ? p.chapters.reduce((a, c) => a + countWords(c.id === state.currentChapterId ? document.getElementById('editor').innerHTML : c.content || ''), 0) : chWords;
+  document.getElementById('status-chapter-words').textContent = `Chapter: ${chWords.toLocaleString()} words`;
+  document.getElementById('status-project-words').textContent = `Total: ${totalWords.toLocaleString()} words`;
+  document.getElementById('status-read-time').textContent = `≈ ${readingTime(chWords)} read`;
+  updateGoalDisplay(totalWords);
+  updateSidebarStats();
+}
+function updateSidebarStats() {
+  const p = getCurrentProject();
+  if (!p) return;
+  const total = p.chapters.reduce((a, c) => a + countWords(c.id === state.currentChapterId ? document.getElementById('editor').innerHTML : c.content || ''), 0);
+  document.getElementById('sidebar-stats').textContent = `${total.toLocaleString()} words · ${p.chapters.length} chapters`;
+}
+function updateGoalDisplay(total) {
+  if (!state.goal.target) {
+    document.getElementById('status-goal-wrap').style.display = 'none';
+    return;
+  }
+  document.getElementById('status-goal-wrap').style.display = 'flex';
+  const pct = Math.min(100, Math.round((total / state.goal.target) * 100));
+  document.getElementById('goal-bar-fill').style.width = pct + '%';
+  document.getElementById('status-goal-text').textContent = `${total}/${state.goal.target} (${pct}%)`;
+}
+
+// ════════════════════════════════════════
+// GOAL
+// ════════════════════════════════════════
+function openGoalModal() {
+  document.getElementById('goal-input').value = state.goal.target || '';
+  document.getElementById('goal-reset').value = state.goal.dailyReset ? '1' : '0';
+  openModal('goal-modal');
+}
+function saveGoal() {
+  state.goal.target = parseInt(document.getElementById('goal-input').value) || 0;
+  state.goal.dailyReset = document.getElementById('goal-reset').value === '1';
+  closeModal('goal-modal');
+  updateStatusBar();
+  saveState();
+  flash('Goal saved!');
+}
+
+// ════════════════════════════════════════
+// FOCUS MODE
+// ════════════════════════════════════════
+function toggleFocus() {
+  state.focusMode = !state.focusMode;
+  document.getElementById('editor-view').classList.toggle('focus-mode', state.focusMode);
+  document.getElementById('focus-btn').classList.toggle('active', state.focusMode);
+  document.getElementById('writing-area').classList.toggle('focus-mode', state.focusMode);
+}
+
+// ════════════════════════════════════════
+// SIDEBAR
+// ════════════════════════════════════════
+function toggleSidebar() {
+  state.sidebarOpen = !state.sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed', !state.sidebarOpen);
+}
+
+// ════════════════════════════════════════
+// SPELLCHECK
+// ════════════════════════════════════════
+function toggleSpell() {
+  state.spellcheck = !state.spellcheck;
+  document.body.classList.toggle('spell-on', state.spellcheck);
+  document.getElementById('editor').spellcheck = state.spellcheck;
+  document.getElementById('spell-btn').classList.toggle('active', state.spellcheck);
+  flash(state.spellcheck ? 'Spellcheck on' : 'Spellcheck off');
+}
+
+// ════════════════════════════════════════
+// EXPORT
+// ════════════════════════════════════════
+function toggleExportMenu() {
+  document.getElementById('export-menu').classList.toggle('open');
+}
+function exportAs(type) {
+  document.getElementById('export-menu').classList.remove('open');
+  const p = getCurrentProject();
+  if (!p) return;
+  const allContent = p.chapters.map(ch => {
+    const div = document.createElement('div'); div.innerHTML = ch.content || '';
+    return { title: ch.title, text: div.textContent, html: ch.content };
+  });
+  const name = p.title.replace(/[^a-z0-9]/gi,'_');
+  if (type === 'txt') {
+    const txt = allContent.map(c => `${c.title}\n${'─'.repeat(c.title.length)}\n\n${c.text}`).join('\n\n');
+    download(name + '.txt', txt, 'text/plain');
+  } else if (type === 'md') {
+    const md = allContent.map(c => `# ${c.title}\n\n${c.text}`).join('\n\n---\n\n');
+    download(name + '.md', md, 'text/markdown');
+  } else if (type === 'html') {
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escHtml(p.title)}</title><style>body{max-width:720px;margin:40px auto;font-family:Georgia,serif;font-size:18px;line-height:1.8;}</style></head><body><h1>${escHtml(p.title)}</h1>${allContent.map(c=>`<h2>${escHtml(c.title)}</h2>${c.html}`).join('<hr>')}</body></html>`;
+    download(name + '.html', html, 'text/html');
+  } else if (type === 'json') {
+    download(name + '.json', JSON.stringify(p, null, 2), 'application/json');
+  } else if (type === 'docx') {
+    exportDocx(p, allContent, name);
+  }
+  flash('Exported!');
+}
+function exportDocx(p, allContent, name) {
+  // Build RTF (Word compatible) as docx isn't feasible without a library
+  // Produce an HTML file with .doc extension which Word opens
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset="UTF-8"><title>${escHtml(p.title)}</title></head><body><h1>${escHtml(p.title)}</h1>${allContent.map(c=>`<h2>${escHtml(c.title)}</h2>${c.html}`).join('<hr>')}</body></html>`;
+  download(name + '.doc', html, 'application/msword');
+}
+function download(filename, content, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+  a.download = filename; a.click();
+}
+
+// ════════════════════════════════════════
+// IMPORT / BACKUP
+// ════════════════════════════════════════
+function triggerImport() { document.getElementById('import-input').click(); }
+function importProject(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
     try {
-      const data = JSON.parse(e.target.result);
-      if (!data.name || !data.chapters) { alert('Invalid project file.'); return; }
-      const id = uid();
-      state.projects[id] = data;
+      const p = JSON.parse(ev.target.result);
+      if (!p.id || !p.title) throw new Error();
+      p.id = uid(); // new id to avoid collision
+      state.projects.unshift(p);
+      renderProjects();
       saveState();
-      closeModal('modal-open-project');
-      openProject(id);
-    } catch { alert('Could not read file.'); }
+      flash('Project imported!');
+    } catch { flash('Invalid project file'); }
   };
   reader.readAsText(file);
+  e.target.value = '';
 }
-
-// Export current project as .wordsmith file
-function exportProject() {
-  if (!state.currentProject) return;
-  saveCurrentChapterContent();
-  const proj = state.projects[state.currentProject];
-  const blob = new Blob([JSON.stringify(proj, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = proj.name.replace(/[^a-z0-9]/gi, '_') + '.wordsmith';
-  a.click();
+function backupAll() {
+  const data = JSON.stringify({ projects: state.projects, exported: Date.now() });
+  download('wordsmith_backup_' + today() + '.json', data, 'application/json');
+  flash('Backup downloaded!');
 }
-
-// Export as plain text
-function exportText() {
-  if (!state.currentProject) return;
-  saveCurrentChapterContent();
-  const proj = state.projects[state.currentProject];
-  let text = proj.name + '\n' + '═'.repeat(40) + '\n\n';
-  proj.chapters.forEach(ch => {
-    text += ch.title + '\n' + '─'.repeat(30) + '\n\n';
-    const el = document.createElement('div');
-    el.innerHTML = ch.content;
-    text += (el.innerText || '') + '\n\n';
-  });
-  const blob = new Blob([text], { type: 'text/plain' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = proj.name.replace(/[^a-z0-9]/gi, '_') + '.txt';
-  a.click();
-}
-
-// ═══════════════════════════════════════
-// Keyboard shortcuts
-// ═══════════════════════════════════════
-function onEditorKeyDown(e) {
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveProject(); }
-  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); toggleFind(); }
-}
-
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveProject(); }
-  if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); toggleFind(); }
-  if (e.key === 'Escape') {
-    if (findVisible) toggleFind();
-    ['modal-new-project','modal-open-project','modal-add-chapter'].forEach(closeModal);
-  }
-});
-
-// ═══════════════════════════════════════
-// Modal helpers
-// ═══════════════════════════════════════
-function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function closeModalOnOverlay(e, id) { if (e.target === e.currentTarget) closeModal(id); }
-
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ═══════════════════════════════════════
-// Right-click context menu extras
-// ═══════════════════════════════════════
-// Append export to titlebar on load
-window.addEventListener('DOMContentLoaded', () => {
-  loadState();
-  // Add export buttons
-  const actions = document.querySelector('#titlebar .tb-actions');
-  const expBtn = document.createElement('button');
-  expBtn.textContent = 'Export';
-  expBtn.onclick = () => {
-    const choice = prompt('Export as:\n1 = Project file (.wordsmith)\n2 = Plain text (.txt)\nEnter 1 or 2:');
-    if (choice === '1') exportProject();
-    else if (choice === '2') exportText();
+function restoreBackup(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const bk = JSON.parse(ev.target.result);
+      const arr = bk.projects || (Array.isArray(bk) ? bk : null);
+      if (!arr) throw new Error();
+      showConfirm('Restore backup?', `This will add ${arr.length} projects from the backup file.`, () => {
+        arr.forEach(p => { if (!state.projects.find(x => x.id === p.id)) state.projects.push(p); });
+        renderProjects();
+        saveState();
+        flash('Backup restored!');
+      });
+    } catch { flash('Invalid backup file'); }
   };
-  actions.insertBefore(expBtn, actions.children[1]);
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ════════════════════════════════════════
+// GLOBAL KEYBOARD SHORTCUTS
+// ════════════════════════════════════════
+function globalKeydown(e) {
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (ctrl && e.key === 'n' && !document.getElementById('editor-view').classList.contains('active')) {
+    e.preventDefault(); newProject(); return;
+  }
+  if (!document.getElementById('editor-view').classList.contains('active')) return;
+  if (ctrl && e.shiftKey && e.key === 'N') { e.preventDefault(); addChapter(); return; }
+  if (ctrl && e.key === 's') { e.preventDefault(); manualSave(); return; }
+  if (ctrl && e.key === 'f') { e.preventDefault(); toggleSearch(); return; }
+  if (ctrl && e.shiftKey && e.key === 'ArrowLeft') { e.preventDefault(); navChapter(-1); return; }
+  if (ctrl && e.shiftKey && e.key === 'ArrowRight') { e.preventDefault(); navChapter(1); return; }
+  // Heading shortcuts
+  if (ctrl && ['1','2','3','4','5','6'].includes(e.key)) {
+    e.preventDefault(); applyParaStyle('h' + e.key); return;
+  }
+  if (ctrl && e.key === '0') { e.preventDefault(); applyParaStyle('p'); return; }
+  // ESC closes search
+  if (e.key === 'Escape') { closeSearch(); hideImgToolbar(); document.getElementById('ctx-menu').classList.remove('open'); }
+}
+
+function navChapter(dir) {
+  const p = getCurrentProject(); if (!p) return;
+  const idx = p.chapters.findIndex(c => c.id === state.currentChapterId);
+  const next = p.chapters[idx + dir];
+  if (next) switchChapter(next.id);
+}
+
+// ════════════════════════════════════════
+// MODALS
+// ════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function showConfirm(title, msg, cb) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent = msg;
+  const btn = document.getElementById('confirm-ok-btn');
+  btn.onclick = () => { closeModal('confirm-modal'); cb(); };
+  openModal('confirm-modal');
+}
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
 });
+
+// ════════════════════════════════════════
+// DROPDOWNS
+// ════════════════════════════════════════
+function closeDropdowns(e) {
+  if (!e.target.closest('.dropdown-wrap')) document.getElementById('export-menu').classList.remove('open');
+  if (!e.target.closest('#ctx-menu') && !e.target.closest('#editor')) document.getElementById('ctx-menu').classList.remove('open');
+  if (!e.target.closest('#img-toolbar') && e.target.tagName !== 'IMG') hideImgToolbar();
+}
+
+// ════════════════════════════════════════
+// FLASH TOAST
+// ════════════════════════════════════════
+let _toastTimer;
+function flash(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function today() { return new Date().toISOString().slice(0,10); }
+function timeStr() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+function timeAgo(ts) {
+  const d = Date.now() - ts; const m = Math.round(d/60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m/60); if (h < 24) return `${h}h ago`;
+  return new Date(ts).toLocaleDateString();
+}
+function getProject(id) { return state.projects.find(p => p.id === id); }
+function getCurrentProject() { return getProject(state.currentProjectId); }
+function getCurrentChapter() {
+  const p = getCurrentProject();
+  return p?.chapters.find(c => c.id === state.currentChapterId);
+}
 </script>
 </body>
 </html>
